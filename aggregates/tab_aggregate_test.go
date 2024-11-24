@@ -4,8 +4,6 @@ import (
 	"golangsevillabar/aggregates"
 	"golangsevillabar/commands"
 	"golangsevillabar/domain"
-
-	// "golangsevillabar/domain"
 	"golangsevillabar/events"
 	"golangsevillabar/events/mocks"
 	"testing"
