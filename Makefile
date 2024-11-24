@@ -6,7 +6,7 @@ help:  ## Display this help.
 ##@ Tools
 tools: ## Installs required binaries locally
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install go.uber.org/mock/mockgen@latest
+	go install github.com/vektra/mockery/v2@v2.49.0
 
 ##@ Building
 build-multi-arch: ## Builds golang-sevilla-bar go binary for linux and darwin. Outputs to `bin/golang-sevilla-bar-$GOOS-$GOARCH`.

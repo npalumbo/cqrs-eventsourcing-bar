@@ -2,24 +2,18 @@ package aggregates
 
 import (
 	"errors"
+	"fmt"
 	"golangsevillabar/commands"
 	"golangsevillabar/events"
 )
 
 type CommandHandler[T commands.Command] interface {
-	Handle(c T) error
+	handle(c T) error
 }
 
-type EventHandler[E events.Event] interface {
-	Apply(e E)
+type EventApplier[E events.Event] interface {
+	apply(e E) error
 }
-
-// Commands
-type OpenTabHandler CommandHandler[commands.OpenTab]
-type PlaceOrderHandler CommandHandler[commands.PlaceOrder]
-
-// Events
-type TabOpenedHandler EventHandler[events.TabOpened]
 
 type openTabHandler struct {
 	eventEmitter events.EventEmitter[events.Event]
@@ -32,12 +26,39 @@ type tabOpenedApplier struct {
 	tabAggregate *TabAggregate
 }
 
-func (t openTabHandler) Handle(c commands.OpenTab) error {
+type TabAggregate struct {
+	tabOpen           bool
+	openTabHandler    CommandHandler[commands.OpenTab]
+	placeOrderHandler CommandHandler[commands.PlaceOrder]
+	TabOpenedHandler  EventApplier[events.TabOpened]
+}
+
+func (t TabAggregate) HandleCommand(c commands.Command) error {
+	switch command := c.(type) {
+	case commands.OpenTab:
+		return t.openTabHandler.handle(command)
+	case commands.PlaceOrder:
+		return t.placeOrderHandler.handle(command)
+	default:
+		return fmt.Errorf("unexpected commands.Command: %#v", c)
+	}
+}
+
+func (t TabAggregate) ApplyEvent(e events.Event) error {
+	switch event := e.(type) {
+	case events.TabOpened:
+		return t.TabOpenedHandler.apply(event)
+	default:
+		return fmt.Errorf("unexpected events.Event: %#v", e)
+	}
+}
+
+func (t openTabHandler) handle(c commands.OpenTab) error {
 	t.eventEmitter.EmitEvent(events.TabOpened{ID: c.ID, TableNumber: c.TableNumber, Waiter: c.Waiter})
 	return nil
 }
 
-func (p placeOrderHandler) Handle(c commands.PlaceOrder) error {
+func (p placeOrderHandler) handle(c commands.PlaceOrder) error {
 	if p.tabAggregate.tabOpen {
 		p.eventEmitter.EmitEvent(events.DrinksOrdered{ID: c.ID, Items: c.Items})
 		return nil
@@ -45,29 +66,23 @@ func (p placeOrderHandler) Handle(c commands.PlaceOrder) error {
 	return errors.New("tab is not opened")
 }
 
-func (t tabOpenedApplier) Apply(e events.TabOpened) {
+func (t tabOpenedApplier) apply(e events.TabOpened) error {
 	t.tabAggregate.tabOpen = true
+	return nil
 }
 
-type TabAggregate struct {
-	tabOpen           bool
-	OpenTabHandler    OpenTabHandler
-	PlaceOrderHandler PlaceOrderHandler
-	TabOpenedHandler  TabOpenedHandler
-}
-
-func CreateTabAggregate(eventEmitter events.EventEmitter[events.Event]) (out TabAggregate) {
+func CreateTabAggregate(eventEmitter events.EventEmitter[events.Event]) (tabAggregate TabAggregate) {
 	return TabAggregate{
 		tabOpen: false,
-		OpenTabHandler: openTabHandler{
+		openTabHandler: openTabHandler{
 			eventEmitter: eventEmitter,
 		},
-		PlaceOrderHandler: placeOrderHandler{
-			tabAggregate: &out,
+		placeOrderHandler: placeOrderHandler{
+			tabAggregate: &tabAggregate,
 			eventEmitter: eventEmitter,
 		},
 		TabOpenedHandler: tabOpenedApplier{
-			tabAggregate: &out,
+			tabAggregate: &tabAggregate,
 		},
 	}
 }

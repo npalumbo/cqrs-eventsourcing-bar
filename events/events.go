@@ -18,3 +18,8 @@ type DrinksOrdered struct {
 	ID    ksuid.KSUID
 	Items []domain.OrderedItem
 }
+
+type DrinkServed struct {
+	ID          ksuid.KSUID
+	MenuNumbers []int
+}

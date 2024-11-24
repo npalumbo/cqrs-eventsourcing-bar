@@ -18,3 +18,8 @@ type PlaceOrder struct {
 	ID    ksuid.KSUID
 	Items []domain.OrderedItem
 }
+
+type MarkDrinksServed struct {
+	ID          ksuid.KSUID
+	MenuNumbers []int
+}

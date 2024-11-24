@@ -2,7 +2,7 @@ package events
 
 import "fmt"
 
-//go:generate mockgen -destination=../mocks/events/mock_emitter.go -source=./emitter.go
+//go:generate mockery --name EventEmitter
 type EventEmitter[E Event] interface {
 	EmitEvent(event E)
 }
