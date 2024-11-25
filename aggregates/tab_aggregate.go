@@ -122,6 +122,15 @@ func (m markDrinksServedHandler) handle(c commands.MarkDrinksServed) error {
 
 func (h closeTabHandler) handle(c commands.CloseTab) error {
 	servedItemsAmount := h.tabAggregate.servedItemsAmount
+	if !h.tabAggregate.tabOpen {
+		return errors.New("cannot close a tab that is not open")
+	}
+	if len(h.tabAggregate.outstandingDrinks) > 0 {
+		return errors.New("cannot close a tab with unserved items")
+	}
+	if c.AmountPaid < servedItemsAmount {
+		return fmt.Errorf("not enough to cover tab, total served cost is: %v, but paid: %v", servedItemsAmount, c.AmountPaid)
+	}
 	h.eventEmitter.EmitEvent(events.TabClosed{ID: c.ID, AmountPaid: c.AmountPaid, OrderAmount: servedItemsAmount, Tip: c.AmountPaid - servedItemsAmount})
 	return nil
 
@@ -139,10 +148,10 @@ func (d drinksOrderedApplier) apply(e events.DrinksOrdered) error {
 
 func (d drinksServedApplier) apply(e events.DrinkServed) error {
 	for _, menuNumber := range e.MenuNumbers {
-		ffound := funk.Find(d.tabAggregate.outstandingDrinks, func(item domain.OrderedItem) bool { return item.MenuItem == menuNumber })
-		if ffound != nil {
-			if itemFound, ok := ffound.(domain.OrderedItem); ok {
-				_ = slices.DeleteFunc(d.tabAggregate.outstandingDrinks, func(itemToDelete domain.OrderedItem) bool {
+		found := funk.Find(d.tabAggregate.outstandingDrinks, func(item domain.OrderedItem) bool { return item.MenuItem == menuNumber })
+		if found != nil {
+			if itemFound, ok := found.(domain.OrderedItem); ok {
+				d.tabAggregate.outstandingDrinks = slices.DeleteFunc(d.tabAggregate.outstandingDrinks, func(itemToDelete domain.OrderedItem) bool {
 					return itemToDelete == itemFound
 				})
 				d.tabAggregate.servedItemsAmount += itemFound.Price
