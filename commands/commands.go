@@ -23,3 +23,8 @@ type MarkDrinksServed struct {
 	ID          ksuid.KSUID
 	MenuNumbers []int
 }
+
+type CloseTab struct {
+	ID         ksuid.KSUID
+	AmountPaid float64
+}

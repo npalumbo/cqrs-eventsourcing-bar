@@ -173,6 +173,34 @@ func (suite *TabAggregateTestSuite) TestCannotServeTheSameOrderedDrinkTwice() {
 	suite.eventEmitter.AssertNumberOfCalls(t, "EmitEvent", 0)
 }
 
+func (suite *TabAggregateTestSuite) TestCanCloseTabWhenPayingExactAmount() {
+
+	tabOpenedEventID, _ := ksuid.NewRandom()
+	drinksOrderedEventID, _ := ksuid.NewRandom()
+	drinksServedID, _ := ksuid.NewRandom()
+	closeTabID, _ := ksuid.NewRandom()
+	t := suite.T()
+
+	// Given
+	_ = suite.tabAggregate.ApplyEvent(events.TabOpened{ID: tabOpenedEventID, Waiter: "waiter_1", TableNumber: 0})
+	_ = suite.tabAggregate.ApplyEvent(events.DrinksOrdered{ID: drinksOrderedEventID, Items: []domain.OrderedItem{
+		{MenuItem: 11, Description: "beer", Price: 1.5},
+		{MenuItem: 12, Description: "water", Price: 1.0},
+	}})
+	_ = suite.tabAggregate.ApplyEvent(events.DrinkServed{ID: drinksServedID, MenuNumbers: []int{11, 12}})
+
+	err := suite.tabAggregate.HandleCommand(commands.CloseTab{ID: closeTabID, AmountPaid: 2.5})
+
+	assert.NoError(t, err)
+	suite.eventEmitter.AssertNumberOfCalls(t, "EmitEvent", 1)
+	suite.eventEmitter.AssertCalled(t, "EmitEvent", events.TabClosed{
+		ID:          closeTabID,
+		AmountPaid:  2.5,
+		OrderAmount: 2.5,
+		Tip:         0,
+	})
+}
+
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(TabAggregateTestSuite))
 }
