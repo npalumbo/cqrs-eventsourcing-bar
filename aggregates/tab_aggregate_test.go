@@ -16,14 +16,13 @@ import (
 
 type TabAggregateTestSuite struct {
 	suite.Suite
-	tabAggregate *aggregates.TabAggregate
+	tabAggregate aggregates.TabAggregate
 	eventEmitter *mocks.EventEmitter[events.Event]
 }
 
 func (suite *TabAggregateTestSuite) SetupTest() {
 	suite.eventEmitter = mocks.NewEventEmitter[events.Event](suite.T())
-	tabAggregate := aggregates.CreateTabAggregate(suite.eventEmitter)
-	suite.tabAggregate = &tabAggregate
+	suite.tabAggregate = aggregates.CreateTabAggregate(suite.eventEmitter)
 	suite.eventEmitter.On("EmitEvent", mock.Anything).Maybe()
 }
 

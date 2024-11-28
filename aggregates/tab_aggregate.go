@@ -12,149 +12,106 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-type CommandHandler[T commands.Command] interface {
-	handle(c T) error
-}
-
-type EventApplier[E events.Event] interface {
-	apply(e E) error
-}
-
-// Command Handlers
-type openTabHandler struct {
-	eventEmitter events.EventEmitter[events.Event]
-}
-type placeOrderHandler struct {
-	tabAggregate *TabAggregate
-	eventEmitter events.EventEmitter[events.Event]
-}
-type markDrinksServedHandler struct {
-	tabAggregate *TabAggregate
-	eventEmitter events.EventEmitter[events.Event]
-}
-type closeTabHandler struct {
-	tabAggregate *TabAggregate
-	eventEmitter events.EventEmitter[events.Event]
-}
-
-// Event Appliers
-type tabOpenedApplier struct {
-	tabAggregate *TabAggregate
-}
-type drinksOrderedApplier struct {
-	tabAggregate *TabAggregate
-}
-type drinksServedApplier struct {
-	tabAggregate *TabAggregate
-}
-type tabClosedApplier struct {
-	tabAggregate *TabAggregate
-}
-
-type TabAggregate struct {
+type tabAggregate struct {
 	tabOpen           bool
+	eventEmitter      events.EventEmitter[events.Event]
 	outstandingDrinks []domain.OrderedItem
 	servedItemsAmount float64
-	// Command Handlers
-	openTabHandler          CommandHandler[commands.OpenTab]
-	placeOrderHandler       CommandHandler[commands.PlaceOrder]
-	markDrinksServedHandler CommandHandler[commands.MarkDrinksServed]
-	closeTabHandler         CommandHandler[commands.CloseTab]
-	// Event Appliers
-	tabOpenedApplier     EventApplier[events.TabOpened]
-	drinksOrderedApplier EventApplier[events.DrinksOrdered]
-	drinksServedApplier  EventApplier[events.DrinkServed]
-	tabClosedApplier     EventApplier[events.TabClosed]
 }
 
-func (t TabAggregate) HandleCommand(c commands.Command) error {
+type TabAggregate interface {
+	HandleCommand(c commands.Command) error
+	ApplyEvent(e events.Event) error
+}
+
+func (t tabAggregate) HandleCommand(c commands.Command) error {
 	switch command := c.(type) {
 	case commands.OpenTab:
-		return t.openTabHandler.handle(command)
+		return t.handleCommandOpenTab(command)
 	case commands.PlaceOrder:
-		return t.placeOrderHandler.handle(command)
+		return t.handleCommandPlaceOrder(command)
 	case commands.MarkDrinksServed:
-		return t.markDrinksServedHandler.handle(command)
+		return t.handleCommandMarkDrinksServed(command)
 	case commands.CloseTab:
-		return t.closeTabHandler.handle(command)
+		return t.handleCommandCloseTab(command)
 	default:
 		return fmt.Errorf("unexpected commands.Command: %#v", c)
 	}
 }
 
-func (t TabAggregate) ApplyEvent(e events.Event) error {
+func (t *tabAggregate) ApplyEvent(e events.Event) error {
 	switch event := e.(type) {
 	case events.TabOpened:
-		return t.tabOpenedApplier.apply(event)
+		return t.applyTabOpened(event)
 	case events.DrinksOrdered:
-		return t.drinksOrderedApplier.apply(event)
+		return t.applyDrinksOrdered(event)
 	case events.DrinkServed:
-		return t.drinksServedApplier.apply(event)
+		return t.applyDrinksServed(event)
 	case events.TabClosed:
-		return t.tabClosedApplier.apply(event)
+		return t.applyTabClosed(event)
 	default:
 		return fmt.Errorf("unexpected events.Event: %#v", e)
 	}
 }
 
-func (t openTabHandler) handle(c commands.OpenTab) error {
+func (t *tabAggregate) handleCommandOpenTab(c commands.OpenTab) error {
 	t.eventEmitter.EmitEvent(events.TabOpened{ID: c.ID, TableNumber: c.TableNumber, Waiter: c.Waiter})
 	return nil
 }
 
-func (p placeOrderHandler) handle(c commands.PlaceOrder) error {
-	if p.tabAggregate.tabOpen {
-		p.eventEmitter.EmitEvent(events.DrinksOrdered{ID: c.ID, Items: c.Items})
+func (t *tabAggregate) handleCommandPlaceOrder(c commands.PlaceOrder) error {
+	if t.tabOpen {
+		t.eventEmitter.EmitEvent(events.DrinksOrdered{ID: c.ID, Items: c.Items})
 		return nil
 	}
 	return errors.New("tab is not opened")
 }
 
-func (m markDrinksServedHandler) handle(c commands.MarkDrinksServed) error {
-	menuItemsThatAreNotInOrderedItems := utils.FindMenuItemsThatAreNotInOrderedItems(m.tabAggregate.outstandingDrinks, c.MenuNumbers)
+func (t *tabAggregate) handleCommandMarkDrinksServed(c commands.MarkDrinksServed) error {
+	menuItemsThatAreNotInOrderedItems := utils.FindMenuItemsThatAreNotInOrderedItems(t.outstandingDrinks, c.MenuNumbers)
 	if len(menuItemsThatAreNotInOrderedItems) > 0 {
 		return fmt.Errorf("cannot serve drinks that were not ordered: %v", menuItemsThatAreNotInOrderedItems)
 	}
 
-	m.eventEmitter.EmitEvent(events.DrinkServed{ID: c.ID, MenuNumbers: c.MenuNumbers})
+	t.eventEmitter.EmitEvent(events.DrinkServed{ID: c.ID, MenuNumbers: c.MenuNumbers})
 	return nil
 }
 
-func (h closeTabHandler) handle(c commands.CloseTab) error {
-	servedItemsAmount := h.tabAggregate.servedItemsAmount
-	if !h.tabAggregate.tabOpen {
+func (t *tabAggregate) handleCommandCloseTab(c commands.CloseTab) error {
+	servedItemsAmount := t.servedItemsAmount
+	if !t.tabOpen {
 		return errors.New("cannot close a tab that is not open")
 	}
-	if len(h.tabAggregate.outstandingDrinks) > 0 {
+	if len(t.outstandingDrinks) > 0 {
 		return errors.New("cannot close a tab with unserved items")
 	}
 	if c.AmountPaid < servedItemsAmount {
 		return fmt.Errorf("not enough to cover tab, total served cost is: %v, but paid: %v", servedItemsAmount, c.AmountPaid)
 	}
-	h.eventEmitter.EmitEvent(events.TabClosed{ID: c.ID, AmountPaid: c.AmountPaid, OrderAmount: servedItemsAmount, Tip: c.AmountPaid - servedItemsAmount})
+	t.eventEmitter.EmitEvent(events.TabClosed{ID: c.ID, AmountPaid: c.AmountPaid, OrderAmount: servedItemsAmount, Tip: c.AmountPaid - servedItemsAmount})
 	return nil
 
 }
 
-func (t tabOpenedApplier) apply(e events.TabOpened) error {
-	t.tabAggregate.tabOpen = true
+func (t *tabAggregate) applyTabOpened(e events.TabOpened) error {
+	t.tabOpen = true
 	return nil
 }
 
-func (d drinksOrderedApplier) apply(e events.DrinksOrdered) error {
-	d.tabAggregate.outstandingDrinks = e.Items
+func (t *tabAggregate) applyDrinksOrdered(e events.DrinksOrdered) error {
+	t.outstandingDrinks = e.Items
 	return nil
 }
 
-func (d drinksServedApplier) apply(e events.DrinkServed) error {
+func (t *tabAggregate) applyDrinksServed(e events.DrinkServed) error {
 	for _, menuNumber := range e.MenuNumbers {
-		found := funk.Find(d.tabAggregate.outstandingDrinks, func(item domain.OrderedItem) bool { return item.MenuItem == menuNumber })
+		found := funk.Find(t.outstandingDrinks, func(item domain.OrderedItem) bool { return item.MenuItem == menuNumber })
 		if found != nil {
 			if itemFound, ok := found.(domain.OrderedItem); ok {
-				d.tabAggregate.outstandingDrinks = slices.DeleteFunc(d.tabAggregate.outstandingDrinks, func(itemToDelete domain.OrderedItem) bool {
+				t.outstandingDrinks = slices.DeleteFunc(t.outstandingDrinks, func(itemToDelete domain.OrderedItem) bool {
 					return itemToDelete == itemFound
 				})
-				d.tabAggregate.servedItemsAmount += itemFound.Price
+				t.servedItemsAmount += itemFound.Price
 			}
 
 		}
@@ -163,40 +120,16 @@ func (d drinksServedApplier) apply(e events.DrinkServed) error {
 	return nil
 }
 
-func (a tabClosedApplier) apply(e events.TabClosed) error {
-	a.tabAggregate.tabOpen = false
+func (t *tabAggregate) applyTabClosed(e events.TabClosed) error {
+	t.tabOpen = false
 	return nil
 }
 
-func CreateTabAggregate(eventEmitter events.EventEmitter[events.Event]) (tabAggregate TabAggregate) {
-	return TabAggregate{
-		tabOpen: false,
-		openTabHandler: openTabHandler{
-			eventEmitter: eventEmitter,
-		},
-		placeOrderHandler: placeOrderHandler{
-			tabAggregate: &tabAggregate,
-			eventEmitter: eventEmitter,
-		},
-		markDrinksServedHandler: markDrinksServedHandler{
-			tabAggregate: &tabAggregate,
-			eventEmitter: eventEmitter,
-		},
-		closeTabHandler: closeTabHandler{
-			tabAggregate: &tabAggregate,
-			eventEmitter: eventEmitter,
-		},
-		tabOpenedApplier: tabOpenedApplier{
-			tabAggregate: &tabAggregate,
-		},
-		drinksOrderedApplier: drinksOrderedApplier{
-			tabAggregate: &tabAggregate,
-		},
-		drinksServedApplier: drinksServedApplier{
-			tabAggregate: &tabAggregate,
-		},
-		tabClosedApplier: tabClosedApplier{
-			tabAggregate: &tabAggregate,
-		},
+func CreateTabAggregate(eventEmitter events.EventEmitter[events.Event]) TabAggregate {
+	return &tabAggregate{
+		tabOpen:           false,
+		eventEmitter:      eventEmitter,
+		outstandingDrinks: []domain.OrderedItem{},
+		servedItemsAmount: 0,
 	}
 }
