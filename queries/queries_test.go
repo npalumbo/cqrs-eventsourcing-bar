@@ -171,6 +171,104 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 	assert.Equal(suite.T(), map[int][]queries.TabItem{1: {{MenuNumber: 11, Description: "Beer", Price: 2}}}, todoListForWaiter)
 }
 
+func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
+	tabId := ksuid.New()
+	suite.openTabQueries.HandleEvent(events.TabOpened{
+		ID:          tabId,
+		TableNumber: 1,
+		Waiter:      "Charles",
+	})
+
+	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+		ID: tabId,
+		Items: []domain.OrderedItem{{
+			MenuItem:    10,
+			Description: "Water",
+			Price:       1,
+		}},
+	})
+
+	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+		ID: tabId,
+		Items: []domain.OrderedItem{{
+			MenuItem:    11,
+			Description: "Beer",
+			Price:       2,
+		}},
+	})
+
+	suite.openTabQueries.HandleEvent(events.DrinkServed{
+		ID:          tabId,
+		MenuNumbers: []int{10},
+	})
+	suite.openTabQueries.HandleEvent(events.DrinkServed{
+		ID:          tabId,
+		MenuNumbers: []int{11},
+	})
+
+	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
+	assert.Equal(suite.T(), []int{1}, activeTableNumbers)
+
+	invoice, err := suite.openTabQueries.InvoiceForTable(1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), false, invoice.HasUnservedItems)
+	assert.Equal(suite.T(), tabId, invoice.TabID)
+	assert.Equal(suite.T(), 1, invoice.TableNumber)
+	assert.Equal(suite.T(), 3.0, invoice.Total)
+	assert.Equal(suite.T(), []queries.TabItem{{MenuNumber: 10, Description: "Water", Price: 1}, {
+		MenuNumber:  11,
+		Description: "Beer",
+		Price:       2,
+	}}, invoice.Items)
+
+	tabForTable, err := suite.openTabQueries.TabForTable(1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), tabId, tabForTable.TabID)
+	assert.Equal(suite.T(), 1, tabForTable.TableNumber)
+	assert.Empty(suite.T(), tabForTable.ToServe)
+
+	tabIdForTable1, err := suite.openTabQueries.TabIdForTable(1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), tabId, tabIdForTable1)
+
+	todoListForWaiter := suite.openTabQueries.TodoListForWaiter("Charles")
+	assert.Equal(suite.T(), map[int][]queries.TabItem{1: {}}, todoListForWaiter)
+}
+
+func (suite *QueriesTestSuite) TestAfterCloseThereIsNoData() {
+	tabId := ksuid.New()
+	suite.openTabQueries.HandleEvent(events.TabOpened{
+		ID:          tabId,
+		TableNumber: 1,
+		Waiter:      "Charles",
+	})
+
+	suite.openTabQueries.HandleEvent(events.TabClosed{
+		ID:          tabId,
+		AmountPaid:  0.0,
+		OrderAmount: 0.0,
+		Tip:         0.0,
+	})
+
+	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
+	assert.Empty(suite.T(), activeTableNumbers)
+
+	_, err := suite.openTabQueries.InvoiceForTable(1)
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), "couldn't find a tab for table: 1", err.Error())
+
+	_, err = suite.openTabQueries.TabForTable(1)
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), "couldn't find a tab for table: 1", err.Error())
+
+	_, err = suite.openTabQueries.TabIdForTable(1)
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), "couldn't find a tab for table: 1", err.Error())
+
+	todoListForWaiter := suite.openTabQueries.TodoListForWaiter("Jenkins")
+	assert.Empty(suite.T(), todoListForWaiter)
+}
+
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(QueriesTestSuite))
 }
