@@ -115,6 +115,62 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 	assert.Equal(suite.T(), map[int][]queries.TabItem{1: {{MenuNumber: 10, Description: "Water", Price: 1}}}, todoListForWaiter)
 }
 
+func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
+	tabId := ksuid.New()
+	suite.openTabQueries.HandleEvent(events.TabOpened{
+		ID:          tabId,
+		TableNumber: 1,
+		Waiter:      "Charles",
+	})
+
+	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+		ID: tabId,
+		Items: []domain.OrderedItem{{
+			MenuItem:    10,
+			Description: "Water",
+			Price:       1,
+		}},
+	})
+
+	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+		ID: tabId,
+		Items: []domain.OrderedItem{{
+			MenuItem:    11,
+			Description: "Beer",
+			Price:       2,
+		}},
+	})
+
+	suite.openTabQueries.HandleEvent(events.DrinkServed{
+		ID:          tabId,
+		MenuNumbers: []int{10},
+	})
+
+	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
+	assert.Equal(suite.T(), []int{1}, activeTableNumbers)
+
+	invoice, err := suite.openTabQueries.InvoiceForTable(1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), true, invoice.HasUnservedItems)
+	assert.Equal(suite.T(), tabId, invoice.TabID)
+	assert.Equal(suite.T(), 1, invoice.TableNumber)
+	assert.Equal(suite.T(), 1.0, invoice.Total)
+	assert.Equal(suite.T(), []queries.TabItem{{MenuNumber: 10, Description: "Water", Price: 1}}, invoice.Items)
+
+	tabForTable, err := suite.openTabQueries.TabForTable(1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), tabId, tabForTable.TabID)
+	assert.Equal(suite.T(), 1, tabForTable.TableNumber)
+	assert.Equal(suite.T(), []queries.TabItem{{MenuNumber: 11, Description: "Beer", Price: 2}}, tabForTable.ToServe)
+
+	tabIdForTable1, err := suite.openTabQueries.TabIdForTable(1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), tabId, tabIdForTable1)
+
+	todoListForWaiter := suite.openTabQueries.TodoListForWaiter("Charles")
+	assert.Equal(suite.T(), map[int][]queries.TabItem{1: {{MenuNumber: 11, Description: "Beer", Price: 2}}}, todoListForWaiter)
+}
+
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(QueriesTestSuite))
 }

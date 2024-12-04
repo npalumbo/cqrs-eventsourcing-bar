@@ -59,7 +59,7 @@ func (o *openTabs) handleDrinksServed(e events.DrinkServed) error {
 		if ok {
 			index := funk.IndexOf(tab.ToServe, tabItemFound)
 			if index > -1 {
-				tab.ToServe = slices.Delete(tab.ToServe, index, index)
+				tab.ToServe = slices.Delete(tab.ToServe, index, index+1)
 				tab.Served = append(tab.Served, tabItemFound)
 			}
 
