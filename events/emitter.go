@@ -3,13 +3,13 @@ package events
 import "fmt"
 
 //go:generate mockery --name EventEmitter
-type EventEmitter[E Event] interface {
-	EmitEvent(event E)
+type EventEmitter interface {
+	EmitEvent(event Event)
 }
 
-type PrintlnEventEmitter[E Event] struct {
+type PrintlnEventEmitter struct {
 }
 
-func (e PrintlnEventEmitter[E]) EmitEvent(event E) {
+func (e PrintlnEventEmitter) EmitEvent(event Event) {
 	fmt.Printf("emitted: %v\n", event)
 }

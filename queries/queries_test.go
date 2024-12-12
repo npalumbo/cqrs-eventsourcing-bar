@@ -42,11 +42,12 @@ func (suite *QueriesTestSuite) TestNoOpenTabs() {
 
 func (suite *QueriesTestSuite) TestAnOpenTab() {
 	tabId := ksuid.New()
-	suite.openTabQueries.HandleEvent(events.TabOpened{
+	err := suite.openTabQueries.HandleEvent(events.TabOpened{
 		ID:          tabId,
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
+	assert.NoError(suite.T(), err)
 
 	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
 	assert.Equal(suite.T(), []int{1}, activeTableNumbers)
@@ -75,13 +76,15 @@ func (suite *QueriesTestSuite) TestAnOpenTab() {
 
 func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 	tabId := ksuid.New()
-	suite.openTabQueries.HandleEvent(events.TabOpened{
+	err := suite.openTabQueries.HandleEvent(events.TabOpened{
 		ID:          tabId,
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
 
-	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+	assert.NoError(suite.T(), err)
+
+	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
 		Items: []domain.OrderedItem{{
 			MenuItem:    10,
@@ -89,6 +92,8 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 			Price:       1,
 		}},
 	})
+
+	assert.NoError(suite.T(), err)
 
 	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
 	assert.Equal(suite.T(), []int{1}, activeTableNumbers)
@@ -117,13 +122,15 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 
 func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 	tabId := ksuid.New()
-	suite.openTabQueries.HandleEvent(events.TabOpened{
+	err := suite.openTabQueries.HandleEvent(events.TabOpened{
 		ID:          tabId,
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
 
-	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+	assert.NoError(suite.T(), err)
+
+	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
 		Items: []domain.OrderedItem{{
 			MenuItem:    10,
@@ -132,7 +139,9 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 		}},
 	})
 
-	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+	assert.NoError(suite.T(), err)
+
+	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
 		Items: []domain.OrderedItem{{
 			MenuItem:    11,
@@ -141,10 +150,14 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 		}},
 	})
 
-	suite.openTabQueries.HandleEvent(events.DrinkServed{
+	assert.NoError(suite.T(), err)
+
+	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
 		ID:          tabId,
 		MenuNumbers: []int{10},
 	})
+
+	assert.NoError(suite.T(), err)
 
 	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
 	assert.Equal(suite.T(), []int{1}, activeTableNumbers)
@@ -173,13 +186,14 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 
 func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 	tabId := ksuid.New()
-	suite.openTabQueries.HandleEvent(events.TabOpened{
+	err := suite.openTabQueries.HandleEvent(events.TabOpened{
 		ID:          tabId,
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
+	assert.NoError(suite.T(), err)
 
-	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
 		Items: []domain.OrderedItem{{
 			MenuItem:    10,
@@ -187,8 +201,9 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 			Price:       1,
 		}},
 	})
+	assert.NoError(suite.T(), err)
 
-	suite.openTabQueries.HandleEvent(events.DrinksOrdered{
+	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
 		Items: []domain.OrderedItem{{
 			MenuItem:    11,
@@ -196,15 +211,18 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 			Price:       2,
 		}},
 	})
+	assert.NoError(suite.T(), err)
 
-	suite.openTabQueries.HandleEvent(events.DrinkServed{
+	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
 		ID:          tabId,
 		MenuNumbers: []int{10},
 	})
-	suite.openTabQueries.HandleEvent(events.DrinkServed{
+	assert.NoError(suite.T(), err)
+	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
 		ID:          tabId,
 		MenuNumbers: []int{11},
 	})
+	assert.NoError(suite.T(), err)
 
 	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
 	assert.Equal(suite.T(), []int{1}, activeTableNumbers)
@@ -237,23 +255,25 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 
 func (suite *QueriesTestSuite) TestAfterCloseThereIsNoData() {
 	tabId := ksuid.New()
-	suite.openTabQueries.HandleEvent(events.TabOpened{
+	err := suite.openTabQueries.HandleEvent(events.TabOpened{
 		ID:          tabId,
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
+	assert.NoError(suite.T(), err)
 
-	suite.openTabQueries.HandleEvent(events.TabClosed{
+	err = suite.openTabQueries.HandleEvent(events.TabClosed{
 		ID:          tabId,
 		AmountPaid:  0.0,
 		OrderAmount: 0.0,
 		Tip:         0.0,
 	})
+	assert.NoError(suite.T(), err)
 
 	activeTableNumbers := suite.openTabQueries.ActiveTableNumbers()
 	assert.Empty(suite.T(), activeTableNumbers)
 
-	_, err := suite.openTabQueries.InvoiceForTable(1)
+	_, err = suite.openTabQueries.InvoiceForTable(1)
 	assert.Error(suite.T(), err)
 	assert.Equal(suite.T(), "couldn't find a tab for table: 1", err.Error())
 
