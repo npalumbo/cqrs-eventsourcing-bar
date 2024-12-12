@@ -1,9 +1,9 @@
 package queries_test
 
 import (
-	"golangsevillabar/domain"
 	"golangsevillabar/events"
 	"golangsevillabar/queries"
+	"golangsevillabar/shared"
 	"testing"
 
 	"github.com/segmentio/ksuid"
@@ -86,7 +86,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
-		Items: []domain.OrderedItem{{
+		Items: []shared.OrderedItem{{
 			MenuItem:    10,
 			Description: "Water",
 			Price:       1,
@@ -132,7 +132,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
-		Items: []domain.OrderedItem{{
+		Items: []shared.OrderedItem{{
 			MenuItem:    10,
 			Description: "Water",
 			Price:       1,
@@ -143,7 +143,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
-		Items: []domain.OrderedItem{{
+		Items: []shared.OrderedItem{{
 			MenuItem:    11,
 			Description: "Beer",
 			Price:       2,
@@ -195,7 +195,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
-		Items: []domain.OrderedItem{{
+		Items: []shared.OrderedItem{{
 			MenuItem:    10,
 			Description: "Water",
 			Price:       1,
@@ -205,7 +205,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		ID: tabId,
-		Items: []domain.OrderedItem{{
+		Items: []shared.OrderedItem{{
 			MenuItem:    11,
 			Description: "Beer",
 			Price:       2,

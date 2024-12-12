@@ -1,4 +1,4 @@
-package domain
+package shared
 
 type OrderedItem struct {
 	MenuItem    int

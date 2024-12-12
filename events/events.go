@@ -1,7 +1,7 @@
 package events
 
 import (
-	"golangsevillabar/domain"
+	"golangsevillabar/shared"
 
 	"github.com/segmentio/ksuid"
 )
@@ -16,7 +16,7 @@ type TabOpened struct {
 
 type DrinksOrdered struct {
 	ID    ksuid.KSUID
-	Items []domain.OrderedItem
+	Items []shared.OrderedItem
 }
 
 type DrinkServed struct {

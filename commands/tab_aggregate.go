@@ -3,8 +3,8 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"golangsevillabar/domain"
 	"golangsevillabar/events"
+	"golangsevillabar/shared"
 	"slices"
 
 	"github.com/thoas/go-funk"
@@ -12,7 +12,7 @@ import (
 
 type tabAggregate struct {
 	tabOpen           bool
-	outstandingDrinks []domain.OrderedItem
+	outstandingDrinks []shared.OrderedItem
 	servedItemsAmount float64
 }
 
@@ -99,10 +99,10 @@ func (t *tabAggregate) applyDrinksOrdered(e events.DrinksOrdered) error {
 
 func (t *tabAggregate) applyDrinksServed(e events.DrinkServed) error {
 	for _, menuNumber := range e.MenuNumbers {
-		found := funk.Find(t.outstandingDrinks, func(item domain.OrderedItem) bool { return item.MenuItem == menuNumber })
+		found := funk.Find(t.outstandingDrinks, func(item shared.OrderedItem) bool { return item.MenuItem == menuNumber })
 		if found != nil {
-			if itemFound, ok := found.(domain.OrderedItem); ok {
-				t.outstandingDrinks = slices.DeleteFunc(t.outstandingDrinks, func(itemToDelete domain.OrderedItem) bool {
+			if itemFound, ok := found.(shared.OrderedItem); ok {
+				t.outstandingDrinks = slices.DeleteFunc(t.outstandingDrinks, func(itemToDelete shared.OrderedItem) bool {
 					return itemToDelete == itemFound
 				})
 				t.servedItemsAmount += itemFound.Price
@@ -122,7 +122,7 @@ func (t *tabAggregate) applyTabClosed(e events.TabClosed) error {
 func CreateTabAggregate() TabAggregate {
 	return &tabAggregate{
 		tabOpen:           false,
-		outstandingDrinks: []domain.OrderedItem{},
+		outstandingDrinks: []shared.OrderedItem{},
 		servedItemsAmount: 0,
 	}
 }
