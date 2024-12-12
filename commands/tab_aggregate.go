@@ -87,7 +87,7 @@ func (t *tabAggregate) handleCommandCloseTab(c CloseTab) ([]events.Event, error)
 
 }
 
-func (t *tabAggregate) applyTabOpened(e events.TabOpened) error {
+func (t *tabAggregate) applyTabOpened(_ events.TabOpened) error {
 	t.tabOpen = true
 	return nil
 }
@@ -114,7 +114,7 @@ func (t *tabAggregate) applyDrinksServed(e events.DrinkServed) error {
 	return nil
 }
 
-func (t *tabAggregate) applyTabClosed(e events.TabClosed) error {
+func (t *tabAggregate) applyTabClosed(_ events.TabClosed) error {
 	t.tabOpen = false
 	return nil
 }
