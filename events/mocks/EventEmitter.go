@@ -14,8 +14,21 @@ type EventEmitter struct {
 }
 
 // EmitEvent provides a mock function with given fields: event
-func (_m *EventEmitter) EmitEvent(event events.Event) {
-	_m.Called(event)
+func (_m *EventEmitter) EmitEvent(event events.Event) error {
+	ret := _m.Called(event)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EmitEvent")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(events.Event) error); ok {
+		r0 = rf(event)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // NewEventEmitter creates a new instance of EventEmitter. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

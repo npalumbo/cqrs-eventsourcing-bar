@@ -7,21 +7,22 @@ import (
 )
 
 type Dispatcher struct {
-	eventStore   events.EventStore
-	eventEmitter events.EventEmitter
+	eventStore       events.EventStore
+	eventEmitter     events.EventEmitter
+	aggregateFactory AggregateFactory
 }
 
-func CreateCommandDispatcher(eventStore events.EventStore, eventEmitter events.EventEmitter) *Dispatcher {
-	return &Dispatcher{eventStore: eventStore, eventEmitter: eventEmitter}
+func CreateCommandDispatcher(eventStore events.EventStore, eventEmitter events.EventEmitter, aggregateFactory AggregateFactory) *Dispatcher {
+	return &Dispatcher{eventStore: eventStore, eventEmitter: eventEmitter, aggregateFactory: aggregateFactory}
 }
 
 func (d *Dispatcher) DispatchCommand(command Command) error {
-	aggregate := CreateTabAggregate()
+	aggregate := d.aggregateFactory.CreateAggregate()
 
 	events, err := d.eventStore.LoadEvents(command.GetID())
 
 	if err != nil {
-		return fmt.Errorf("error loading events for aggregate: %d, %w", command.GetID(), err)
+		return fmt.Errorf("error loading events for aggregate: %s, reason: %w", command.GetID().String(), err)
 	}
 
 	for i, event := range events {
@@ -44,7 +45,10 @@ func (d *Dispatcher) DispatchCommand(command Command) error {
 	}
 
 	for _, event := range newEvents {
-		d.eventEmitter.EmitEvent(event)
+		err = d.eventEmitter.EmitEvent(event)
+		if err != nil {
+			return fmt.Errorf("error when emitting event [%s] for aggregate: %d, %w", reflect.TypeOf(event), command.GetID(), err)
+		}
 	}
 
 	return nil

@@ -16,7 +16,8 @@ type tabAggregate struct {
 	servedItemsAmount float64
 }
 
-type TabAggregate interface {
+//go:generate mockery --name Aggregate
+type Aggregate interface {
 	HandleCommand(c Command) ([]events.Event, error)
 	ApplyEvent(e events.Event) error
 }
@@ -119,7 +120,15 @@ func (t *tabAggregate) applyTabClosed(_ events.TabClosed) error {
 	return nil
 }
 
-func CreateTabAggregate() TabAggregate {
+//go:generate mockery --name AggregateFactory
+type AggregateFactory interface {
+	CreateAggregate() Aggregate
+}
+
+type TabAggregateFactory struct {
+}
+
+func (t TabAggregateFactory) CreateAggregate() Aggregate {
 	return &tabAggregate{
 		tabOpen:           false,
 		outstandingDrinks: []shared.OrderedItem{},

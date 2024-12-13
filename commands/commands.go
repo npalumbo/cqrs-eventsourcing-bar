@@ -20,25 +20,21 @@ func (command BaseCommand) GetID() ksuid.KSUID {
 
 type OpenTab struct {
 	BaseCommand
-	ID          ksuid.KSUID
 	TableNumber int
 	Waiter      string
 }
 
 type PlaceOrder struct {
 	BaseCommand
-	ID    ksuid.KSUID
 	Items []shared.OrderedItem
 }
 
 type MarkDrinksServed struct {
 	BaseCommand
-	ID          ksuid.KSUID
 	MenuNumbers []int
 }
 
 type CloseTab struct {
 	BaseCommand
-	ID         ksuid.KSUID
 	AmountPaid float64
 }

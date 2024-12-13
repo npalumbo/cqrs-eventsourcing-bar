@@ -13,11 +13,11 @@ import (
 
 type TabAggregateTestSuite struct {
 	suite.Suite
-	tabAggregate commands.TabAggregate
+	tabAggregate commands.Aggregate
 }
 
 func (suite *TabAggregateTestSuite) SetupTest() {
-	suite.tabAggregate = commands.CreateTabAggregate()
+	suite.tabAggregate = commands.TabAggregateFactory{}.CreateAggregate()
 }
 
 func (suite *TabAggregateTestSuite) TestCanOpenTab() {
@@ -29,7 +29,7 @@ func (suite *TabAggregateTestSuite) TestCanOpenTab() {
 
 	// When
 	newEvents, err := suite.tabAggregate.HandleCommand(commands.OpenTab{
-		ID:          commandID,
+		BaseCommand: commands.BaseCommand{ID: commandID},
 		TableNumber: 0,
 		Waiter:      "waiter_1",
 	})
@@ -51,8 +51,8 @@ func (suite *TabAggregateTestSuite) TestCanNotOrderWithUnOpenedTab() {
 
 	// When
 	newEvents, err := suite.tabAggregate.HandleCommand(commands.PlaceOrder{
-		ID:    commandID,
-		Items: []shared.OrderedItem{{MenuItem: 11, Description: "beer", Price: 1.5}},
+		BaseCommand: commands.BaseCommand{ID: commandID},
+		Items:       []shared.OrderedItem{{MenuItem: 11, Description: "beer", Price: 1.5}},
 	})
 
 	// Then
@@ -72,8 +72,8 @@ func (suite *TabAggregateTestSuite) TestCanOrderWhenTabIsOpen() {
 
 	// When
 	newEvents, err := suite.tabAggregate.HandleCommand(commands.PlaceOrder{
-		ID:    placeOrderCommandID,
-		Items: []shared.OrderedItem{{MenuItem: 11, Description: "beer", Price: 1.5}},
+		BaseCommand: commands.BaseCommand{ID: placeOrderCommandID},
+		Items:       []shared.OrderedItem{{MenuItem: 11, Description: "beer", Price: 1.5}},
 	})
 
 	// Then
@@ -99,7 +99,7 @@ func (suite *TabAggregateTestSuite) TestOrderedDrinksCanBeServed() {
 
 	// When
 	newEvents, err := suite.tabAggregate.HandleCommand(commands.MarkDrinksServed{
-		ID:          markDrinksServedID,
+		BaseCommand: commands.BaseCommand{ID: markDrinksServedID},
 		MenuNumbers: []int{11, 12},
 	})
 
@@ -126,7 +126,7 @@ func (suite *TabAggregateTestSuite) TestCannotServeUnorderedDrinks() {
 
 	// When
 	newEvents, err := suite.tabAggregate.HandleCommand(commands.MarkDrinksServed{
-		ID:          markDrinksServedID,
+		BaseCommand: commands.BaseCommand{ID: markDrinksServedID},
 		MenuNumbers: []int{11, 13},
 	})
 
@@ -152,7 +152,7 @@ func (suite *TabAggregateTestSuite) TestCannotServeTheSameOrderedDrinkTwice() {
 
 	// When
 	newEvents, err := suite.tabAggregate.HandleCommand(commands.MarkDrinksServed{
-		ID:          markDrinksServedID,
+		BaseCommand: commands.BaseCommand{ID: markDrinksServedID},
 		MenuNumbers: []int{11},
 	})
 
@@ -179,7 +179,7 @@ func (suite *TabAggregateTestSuite) TestCanCloseTabWhenPayingExactAmount() {
 	_ = suite.tabAggregate.ApplyEvent(events.DrinkServed{ID: drinksServedID, MenuNumbers: []int{11, 12}})
 
 	// When
-	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{ID: closeTabID, AmountPaid: 2.5})
+	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{BaseCommand: commands.BaseCommand{ID: closeTabID}, AmountPaid: 2.5})
 
 	// Then
 	assert.NoError(t, err)
@@ -207,7 +207,7 @@ func (suite *TabAggregateTestSuite) TestCanCloseTabWithTipWhenPayingMoreThanOrde
 	_ = suite.tabAggregate.ApplyEvent(events.DrinkServed{ID: drinksServedID, MenuNumbers: []int{11}})
 
 	// When
-	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{ID: closeTabID, AmountPaid: 2.5})
+	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{BaseCommand: commands.BaseCommand{ID: closeTabID}, AmountPaid: 2.5})
 
 	// Then
 	assert.NoError(t, err)
@@ -235,7 +235,7 @@ func (suite *TabAggregateTestSuite) TestCanotCloseTabWhenPayingLessThanOrdered()
 	_ = suite.tabAggregate.ApplyEvent(events.DrinkServed{ID: drinksServedID, MenuNumbers: []int{11}})
 
 	// When
-	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{ID: closeTabID, AmountPaid: 1.0})
+	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{BaseCommand: commands.BaseCommand{ID: closeTabID}, AmountPaid: 1.0})
 
 	// Then
 	assert.Error(t, err)
@@ -260,7 +260,7 @@ func (suite *TabAggregateTestSuite) TestCanotCloseTabWithUnservedItems() {
 	_ = suite.tabAggregate.ApplyEvent(events.DrinkServed{ID: drinksServedID, MenuNumbers: []int{11}})
 
 	// When
-	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{ID: closeTabID, AmountPaid: 1.5})
+	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{BaseCommand: commands.BaseCommand{ID: closeTabID}, AmountPaid: 1.5})
 
 	// Then
 	assert.Error(t, err)
@@ -284,7 +284,7 @@ func (suite *TabAggregateTestSuite) TestCanotCloseTabTwice() {
 	_ = suite.tabAggregate.ApplyEvent(events.DrinkServed{ID: drinksServedID, MenuNumbers: []int{11}})
 	_ = suite.tabAggregate.ApplyEvent(events.TabClosed{ID: drinksServedID, AmountPaid: 1.5, OrderAmount: 1.5, Tip: 0})
 
-	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{ID: closeTabID, AmountPaid: 1.5})
+	newEvents, err := suite.tabAggregate.HandleCommand(commands.CloseTab{BaseCommand: commands.BaseCommand{ID: closeTabID}, AmountPaid: 1.5})
 
 	assert.Error(t, err)
 	assert.Equal(t, "cannot close a tab that is not open", err.Error())
