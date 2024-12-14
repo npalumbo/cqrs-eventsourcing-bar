@@ -28,7 +28,7 @@ func (d *Dispatcher) DispatchCommand(command Command) error {
 	for i, event := range events {
 		err = aggregate.ApplyEvent(event)
 		if err != nil {
-			return fmt.Errorf("error applying past event [%s-#%d] for aggregate: %d, %w", reflect.TypeOf(event).Name(), i, command.GetID(), err)
+			return fmt.Errorf("error applying past event [%s-#%d] for aggregate: %s, reason: %w", reflect.TypeOf(event).Name(), i, command.GetID().String(), err)
 		}
 	}
 

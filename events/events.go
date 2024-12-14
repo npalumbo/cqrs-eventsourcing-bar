@@ -8,24 +8,32 @@ import (
 
 type Event interface{}
 
+type BaseEvent struct {
+	ID ksuid.KSUID
+}
+
+func (event BaseEvent) GetID() ksuid.KSUID {
+	return event.ID
+}
+
 type TabOpened struct {
-	ID          ksuid.KSUID
+	BaseEvent
 	TableNumber int
 	Waiter      string
 }
 
 type DrinksOrdered struct {
-	ID    ksuid.KSUID
+	BaseEvent
 	Items []shared.OrderedItem
 }
 
 type DrinkServed struct {
-	ID          ksuid.KSUID
+	BaseEvent
 	MenuNumbers []int
 }
 
 type TabClosed struct {
-	ID          ksuid.KSUID
+	BaseEvent
 	AmountPaid  float64
 	OrderAmount float64
 	Tip         float64

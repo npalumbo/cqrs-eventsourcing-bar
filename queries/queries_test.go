@@ -43,7 +43,7 @@ func (suite *QueriesTestSuite) TestNoOpenTabs() {
 func (suite *QueriesTestSuite) TestAnOpenTab() {
 	tabId := ksuid.New()
 	err := suite.openTabQueries.HandleEvent(events.TabOpened{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
@@ -77,7 +77,7 @@ func (suite *QueriesTestSuite) TestAnOpenTab() {
 func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 	tabId := ksuid.New()
 	err := suite.openTabQueries.HandleEvent(events.TabOpened{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
@@ -85,7 +85,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
-		ID: tabId,
+		BaseEvent: events.BaseEvent{ID: tabId},
 		Items: []shared.OrderedItem{{
 			MenuItem:    10,
 			Description: "Water",
@@ -123,7 +123,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 	tabId := ksuid.New()
 	err := suite.openTabQueries.HandleEvent(events.TabOpened{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
@@ -131,7 +131,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
-		ID: tabId,
+		BaseEvent: events.BaseEvent{ID: tabId},
 		Items: []shared.OrderedItem{{
 			MenuItem:    10,
 			Description: "Water",
@@ -142,7 +142,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
-		ID: tabId,
+		BaseEvent: events.BaseEvent{ID: tabId},
 		Items: []shared.OrderedItem{{
 			MenuItem:    11,
 			Description: "Beer",
@@ -153,7 +153,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		MenuNumbers: []int{10},
 	})
 
@@ -187,14 +187,14 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 	tabId := ksuid.New()
 	err := suite.openTabQueries.HandleEvent(events.TabOpened{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
-		ID: tabId,
+		BaseEvent: events.BaseEvent{ID: tabId},
 		Items: []shared.OrderedItem{{
 			MenuItem:    10,
 			Description: "Water",
@@ -204,7 +204,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
-		ID: tabId,
+		BaseEvent: events.BaseEvent{ID: tabId},
 		Items: []shared.OrderedItem{{
 			MenuItem:    11,
 			Description: "Beer",
@@ -214,12 +214,12 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		MenuNumbers: []int{10},
 	})
 	assert.NoError(suite.T(), err)
 	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		MenuNumbers: []int{11},
 	})
 	assert.NoError(suite.T(), err)
@@ -256,14 +256,14 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 func (suite *QueriesTestSuite) TestAfterCloseThereIsNoData() {
 	tabId := ksuid.New()
 	err := suite.openTabQueries.HandleEvent(events.TabOpened{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		TableNumber: 1,
 		Waiter:      "Charles",
 	})
 	assert.NoError(suite.T(), err)
 
 	err = suite.openTabQueries.HandleEvent(events.TabClosed{
-		ID:          tabId,
+		BaseEvent:   events.BaseEvent{ID: tabId},
 		AmountPaid:  0.0,
 		OrderAmount: 0.0,
 		Tip:         0.0,

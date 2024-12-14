@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golangsevillabar/commands"
 	mock_commands "golangsevillabar/commands/mocks"
+	"golangsevillabar/events"
 	mock_events "golangsevillabar/events/mocks"
 	"testing"
 
@@ -19,6 +20,7 @@ type DispatcherTestSuite struct {
 	dispatcher   *commands.Dispatcher
 	eventEmitter *mock_events.EventEmitter
 	eventStore   *mock_events.EventStore
+	aggregate    *mock_commands.Aggregate
 }
 
 func (suite *DispatcherTestSuite) SetupTest() {
@@ -30,6 +32,7 @@ func (suite *DispatcherTestSuite) SetupTest() {
 	suite.dispatcher = commands.CreateCommandDispatcher(eventStore, eventEmitter, aggregateFactory)
 	suite.eventEmitter = eventEmitter
 	suite.eventStore = eventStore
+	suite.aggregate = aggregate
 }
 
 func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToLoadEvents() {
@@ -49,22 +52,22 @@ func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToLoadEve
 	}
 }
 
-// func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToApplyEventOnAggregate() {
-// 	// Given
-// 	errorLoadingEvents := errors.New("all broken")
-// 	suite.eventStore.On("LoadEvents", mock.Anything).Return(nil, errorLoadingEvents)
+func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToApplyEventOnAggregate() {
+	// Given
+	aggregateId := ksuid.New()
+	suite.eventStore.On("LoadEvents", mock.Anything).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
+	suite.aggregate.On("ApplyEvent", events.BaseEvent{ID: aggregateId}).Return(errors.New("all broken"))
 
-// 	// When
-// 	aggregateId := ksuid.New()
-// 	err := suite.dispatcher.DispatchCommand(
-// 		commands.BaseCommand{aggregateId},
-// 	)
+	// When
+	err := suite.dispatcher.DispatchCommand(
+		commands.BaseCommand{aggregateId},
+	)
 
-// 	// Then
-// 	if assert.Error(suite.T(), err) {
-// 		assert.Equal(suite.T(), fmt.Sprintf("error loading events for aggregate: %s, reason: all broken", aggregateId), err.Error())
-// 	}
-// }
+	// Then
+	if assert.Error(suite.T(), err) {
+		assert.Equal(suite.T(), fmt.Sprintf("error applying past event [BaseEvent-#0] for aggregate: %s, reason: all broken", aggregateId), err.Error())
+	}
+}
 
 func TestDispatcherTestSuite(t *testing.T) {
 	suite.Run(t, new(DispatcherTestSuite))

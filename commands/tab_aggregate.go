@@ -53,12 +53,12 @@ func (t *tabAggregate) ApplyEvent(e events.Event) error {
 }
 
 func (t *tabAggregate) handleCommandOpenTab(c OpenTab) ([]events.Event, error) {
-	return []events.Event{events.TabOpened{ID: c.ID, TableNumber: c.TableNumber, Waiter: c.Waiter}}, nil
+	return []events.Event{events.TabOpened{BaseEvent: events.BaseEvent{ID: c.ID}, TableNumber: c.TableNumber, Waiter: c.Waiter}}, nil
 }
 
 func (t *tabAggregate) handleCommandPlaceOrder(c PlaceOrder) ([]events.Event, error) {
 	if t.tabOpen {
-		return []events.Event{events.DrinksOrdered{ID: c.ID, Items: c.Items}}, nil
+		return []events.Event{events.DrinksOrdered{BaseEvent: events.BaseEvent{ID: c.ID}, Items: c.Items}}, nil
 	}
 	return nil, errors.New("tab is not opened")
 }
@@ -69,7 +69,7 @@ func (t *tabAggregate) handleCommandMarkDrinksServed(c MarkDrinksServed) ([]even
 		return nil, fmt.Errorf("cannot serve drinks that were not ordered: %v", menuItemsThatAreNotInOrderedItems)
 	}
 
-	return []events.Event{events.DrinkServed{ID: c.ID, MenuNumbers: c.MenuNumbers}}, nil
+	return []events.Event{events.DrinkServed{BaseEvent: events.BaseEvent{ID: c.ID}, MenuNumbers: c.MenuNumbers}}, nil
 }
 
 func (t *tabAggregate) handleCommandCloseTab(c CloseTab) ([]events.Event, error) {
@@ -83,7 +83,7 @@ func (t *tabAggregate) handleCommandCloseTab(c CloseTab) ([]events.Event, error)
 	if c.AmountPaid < servedItemsAmount {
 		return nil, fmt.Errorf("not enough to cover tab, total served cost is: %v, but paid: %v", servedItemsAmount, c.AmountPaid)
 	}
-	return []events.Event{events.TabClosed{ID: c.ID, AmountPaid: c.AmountPaid, OrderAmount: servedItemsAmount, Tip: c.AmountPaid - servedItemsAmount}},
+	return []events.Event{events.TabClosed{BaseEvent: events.BaseEvent{ID: c.ID}, AmountPaid: c.AmountPaid, OrderAmount: servedItemsAmount, Tip: c.AmountPaid - servedItemsAmount}},
 		nil
 
 }
