@@ -35,19 +35,19 @@ func (d *Dispatcher) DispatchCommand(command Command) error {
 	newEvents, err := aggregate.HandleCommand(command)
 
 	if err != nil {
-		return fmt.Errorf("error handling command [%s] for aggregate: %d, %w", reflect.TypeOf(command).Name(), command.GetID(), err)
+		return fmt.Errorf("error handling command [%s] for aggregate: %s, reason: %w", reflect.TypeOf(command).Name(), command.GetID().String(), err)
 	}
 
 	err = d.eventStore.SaveEvents(command.GetID(), len(events), newEvents)
 
 	if err != nil {
-		return fmt.Errorf("error when saving events for aggregate: %d, %w", command.GetID(), err)
+		return fmt.Errorf("error when saving events for aggregate: %s, reason: %w", command.GetID(), err)
 	}
 
 	for _, event := range newEvents {
 		err = d.eventEmitter.EmitEvent(event)
 		if err != nil {
-			return fmt.Errorf("error when emitting event [%s] for aggregate: %d, %w", reflect.TypeOf(event), command.GetID(), err)
+			return fmt.Errorf("error when emitting event [%s] for aggregate: %s, reason: %w", reflect.TypeOf(event), command.GetID(), err)
 		}
 	}
 
