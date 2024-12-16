@@ -1,6 +1,8 @@
 package events
 
 import (
+	"encoding/json"
+	"fmt"
 	"golangsevillabar/shared"
 
 	"github.com/segmentio/ksuid"
@@ -37,4 +39,35 @@ type TabClosed struct {
 	AmountPaid  float64
 	OrderAmount float64
 	Tip         float64
+}
+
+func UnmarshallPayload(typeName, payload string) (Event, error) {
+	switch typeName {
+	case "TabOpened":
+		var event TabOpened
+		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
+		}
+		return event, nil
+	case "DrinksOrdered":
+		var event TabOpened
+		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
+		}
+		return event, nil
+	case "DrinkServed":
+		var event TabOpened
+		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
+		}
+		return event, nil
+	case "TabClosed":
+		var event TabOpened
+		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
+		}
+		return event, nil
+	default:
+		return nil, fmt.Errorf("unsupported type: %s", typeName)
+	}
 }
