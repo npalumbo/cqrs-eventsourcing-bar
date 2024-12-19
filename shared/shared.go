@@ -1,7 +1,7 @@
 package shared
 
 type OrderedItem struct {
-	MenuItem    int
-	Description string
-	Price       float64
+	MenuItem    int     `json:"menu_item"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
 }

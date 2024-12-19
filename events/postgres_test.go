@@ -3,10 +3,10 @@ package events_test
 import (
 	"context"
 	"log"
-	"reflect"
 	"testing"
 
 	"golangsevillabar/events"
+	"golangsevillabar/shared"
 	"golangsevillabar/testhelpers"
 
 	"github.com/segmentio/ksuid"
@@ -43,14 +43,70 @@ func (suite *PostgresEventStoreTestSuite) TearDownSuite() {
 
 func (suite *PostgresEventStoreTestSuite) TestLoadEvents() {
 	t := suite.T()
-
+	// Given
 	aggregateId, _ := ksuid.Parse("2qPTBJCN6ib7iJ6WaIVvoSmySSV")
-	events, err := suite.eventStorePostgres.LoadEvents(aggregateId)
+	// When
+	loadedEvents, err := suite.eventStorePostgres.LoadEvents(aggregateId)
+	// Then
 	assert.NoError(t, err)
-	assert.NotNil(t, events)
-	assert.Equal(t, aggregateId, events[0].GetID())
-	assert.Equal(t, "TabOpened", reflect.TypeOf(events[0]).String())
+	assert.NotEmpty(t, loadedEvents)
+	assert.Len(t, loadedEvents, 2)
+	assert.Equal(t, aggregateId, loadedEvents[0].GetID())
+	tabOpened, ok := loadedEvents[0].(events.TabOpened)
+	assert.True(t, ok)
+	assert.Equal(t, events.TabOpened{
+		BaseEvent:   events.BaseEvent{ID: aggregateId},
+		TableNumber: 1,
+		Waiter:      "w1",
+	}, tabOpened)
+	drinksOrdered, ok := loadedEvents[1].(events.DrinksOrdered)
+	assert.True(t, ok)
+	assert.Equal(t, events.DrinksOrdered{
+		BaseEvent: events.BaseEvent{ID: aggregateId},
+		Items: []shared.OrderedItem{{
+			MenuItem:    1,
+			Description: "water",
+			Price:       1.5,
+		}},
+	}, drinksOrdered)
 
+}
+
+func (suite *PostgresEventStoreTestSuite) TestSaveEventsErrorsIfWeAttemptToOverrideExistingEvent() {
+	// Given
+	aggregateId, _ := ksuid.Parse("2qPTBJCN6ib7iJ6WaIVvoSmySSV")
+
+	eventsToSave := []events.Event{events.DrinksOrdered{
+		BaseEvent: events.BaseEvent{ID: aggregateId},
+		Items: []shared.OrderedItem{{
+			MenuItem:    1,
+			Description: "water",
+			Price:       1.5,
+		}}}}
+
+	// When
+	err := suite.eventStorePostgres.SaveEvents(aggregateId, 1, eventsToSave)
+	// Then
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), "ERROR: duplicate key value violates unique constraint \"events_pkey\" (SQLSTATE 23505)", err.Error())
+}
+
+func (suite *PostgresEventStoreTestSuite) TestSaveEvents() {
+	// Given
+	aggregateId, _ := ksuid.Parse("2qPTBJCN6ib7iJ6WaIVvoSmySSV")
+
+	eventsToSave := []events.Event{events.DrinksOrdered{
+		BaseEvent: events.BaseEvent{ID: aggregateId},
+		Items: []shared.OrderedItem{{
+			MenuItem:    1,
+			Description: "water",
+			Price:       1.5,
+		}}}}
+
+	// When
+	err := suite.eventStorePostgres.SaveEvents(aggregateId, 2, eventsToSave)
+	// Then
+	assert.NoError(suite.T(), err)
 }
 
 func TestPostgresEventStoreTestSuite(t *testing.T) {

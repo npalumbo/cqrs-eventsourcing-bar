@@ -4,9 +4,7 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 type PostgresContainer struct {
@@ -21,9 +19,8 @@ func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 		postgres.WithDatabase("test-db"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections"),
-		),
+		postgres.BasicWaitStrategies(),
+		postgres.WithSQLDriver("pgx"),
 	)
 	if err != nil {
 		return nil, err
