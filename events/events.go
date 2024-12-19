@@ -8,10 +8,12 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-type Event interface{}
+type Event interface {
+	GetID() ksuid.KSUID
+}
 
 type BaseEvent struct {
-	ID ksuid.KSUID
+	ID ksuid.KSUID `json:"id"`
 }
 
 func (event BaseEvent) GetID() ksuid.KSUID {
@@ -20,13 +22,13 @@ func (event BaseEvent) GetID() ksuid.KSUID {
 
 type TabOpened struct {
 	BaseEvent
-	TableNumber int
-	Waiter      string
+	TableNumber int    `json:"table_number"`
+	Waiter      string `json:"waiter"`
 }
 
 type DrinksOrdered struct {
 	BaseEvent
-	Items []shared.OrderedItem
+	Items []shared.OrderedItem `json:"items"`
 }
 
 type DrinkServed struct {
@@ -50,21 +52,21 @@ func UnmarshallPayload(typeName, payload string) (Event, error) {
 		}
 		return event, nil
 	case "DrinksOrdered":
-		var event TabOpened
+		var event DrinksOrdered
 		if err := json.Unmarshal([]byte(payload), &event); err != nil {
-			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
+			return DrinksOrdered{}, fmt.Errorf("could not create DrinksOrdered event from payload: %s", payload)
 		}
 		return event, nil
 	case "DrinkServed":
-		var event TabOpened
+		var event DrinkServed
 		if err := json.Unmarshal([]byte(payload), &event); err != nil {
-			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
+			return DrinkServed{}, fmt.Errorf("could not create DrinkServed event from payload: %s", payload)
 		}
 		return event, nil
 	case "TabClosed":
-		var event TabOpened
+		var event TabClosed
 		if err := json.Unmarshal([]byte(payload), &event); err != nil {
-			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
+			return TabClosed{}, fmt.Errorf("could not create TabClosed event from payload: %s", payload)
 		}
 		return event, nil
 	default:
