@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	context "context"
 	events "golangsevillabar/events"
 
 	ksuid "github.com/segmentio/ksuid"
@@ -15,9 +16,9 @@ type EventStore struct {
 	mock.Mock
 }
 
-// LoadEvents provides a mock function with given fields: aggregateID
-func (_m *EventStore) LoadEvents(aggregateID ksuid.KSUID) ([]events.Event, error) {
-	ret := _m.Called(aggregateID)
+// LoadEvents provides a mock function with given fields: ctx, aggregateID
+func (_m *EventStore) LoadEvents(ctx context.Context, aggregateID ksuid.KSUID) ([]events.Event, error) {
+	ret := _m.Called(ctx, aggregateID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for LoadEvents")
@@ -25,19 +26,19 @@ func (_m *EventStore) LoadEvents(aggregateID ksuid.KSUID) ([]events.Event, error
 
 	var r0 []events.Event
 	var r1 error
-	if rf, ok := ret.Get(0).(func(ksuid.KSUID) ([]events.Event, error)); ok {
-		return rf(aggregateID)
+	if rf, ok := ret.Get(0).(func(context.Context, ksuid.KSUID) ([]events.Event, error)); ok {
+		return rf(ctx, aggregateID)
 	}
-	if rf, ok := ret.Get(0).(func(ksuid.KSUID) []events.Event); ok {
-		r0 = rf(aggregateID)
+	if rf, ok := ret.Get(0).(func(context.Context, ksuid.KSUID) []events.Event); ok {
+		r0 = rf(ctx, aggregateID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]events.Event)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(ksuid.KSUID) error); ok {
-		r1 = rf(aggregateID)
+	if rf, ok := ret.Get(1).(func(context.Context, ksuid.KSUID) error); ok {
+		r1 = rf(ctx, aggregateID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -45,17 +46,17 @@ func (_m *EventStore) LoadEvents(aggregateID ksuid.KSUID) ([]events.Event, error
 	return r0, r1
 }
 
-// SaveEvents provides a mock function with given fields: aggregateID, lastKnownEventID, _a2
-func (_m *EventStore) SaveEvents(aggregateID ksuid.KSUID, lastKnownEventID int, _a2 []events.Event) error {
-	ret := _m.Called(aggregateID, lastKnownEventID, _a2)
+// SaveEvents provides a mock function with given fields: ctx, aggregateID, previousEventCount, _a3
+func (_m *EventStore) SaveEvents(ctx context.Context, aggregateID ksuid.KSUID, previousEventCount int, _a3 []events.Event) error {
+	ret := _m.Called(ctx, aggregateID, previousEventCount, _a3)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveEvents")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(ksuid.KSUID, int, []events.Event) error); ok {
-		r0 = rf(aggregateID, lastKnownEventID, _a2)
+	if rf, ok := ret.Get(0).(func(context.Context, ksuid.KSUID, int, []events.Event) error); ok {
+		r0 = rf(ctx, aggregateID, previousEventCount, _a3)
 	} else {
 		r0 = ret.Error(0)
 	}

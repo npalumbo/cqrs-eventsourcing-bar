@@ -46,7 +46,7 @@ func (suite *PostgresEventStoreTestSuite) TestLoadEvents() {
 	// Given
 	aggregateId, _ := ksuid.Parse("2qPTBJCN6ib7iJ6WaIVvoSmySSV")
 	// When
-	loadedEvents, err := suite.eventStorePostgres.LoadEvents(aggregateId)
+	loadedEvents, err := suite.eventStorePostgres.LoadEvents(context.TODO(), aggregateId)
 	// Then
 	assert.NoError(t, err)
 	assert.NotEmpty(t, loadedEvents)
@@ -85,7 +85,7 @@ func (suite *PostgresEventStoreTestSuite) TestSaveEventsErrorsIfWeAttemptToOverr
 		}}}}
 
 	// When
-	err := suite.eventStorePostgres.SaveEvents(aggregateId, 1, eventsToSave)
+	err := suite.eventStorePostgres.SaveEvents(context.TODO(), aggregateId, 1, eventsToSave)
 	// Then
 	assert.Error(suite.T(), err)
 	assert.Equal(suite.T(), "ERROR: duplicate key value violates unique constraint \"events_pkey\" (SQLSTATE 23505)", err.Error())
@@ -104,7 +104,7 @@ func (suite *PostgresEventStoreTestSuite) TestSaveEvents() {
 		}}}}
 
 	// When
-	err := suite.eventStorePostgres.SaveEvents(aggregateId, 2, eventsToSave)
+	err := suite.eventStorePostgres.SaveEvents(context.TODO(), aggregateId, 2, eventsToSave)
 	// Then
 	assert.NoError(suite.T(), err)
 }

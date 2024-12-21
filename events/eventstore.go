@@ -1,9 +1,13 @@
 package events
 
-import "github.com/segmentio/ksuid"
+import (
+	"context"
+
+	"github.com/segmentio/ksuid"
+)
 
 //go:generate mockery --name EventStore
 type EventStore interface {
-	LoadEvents(aggregateID ksuid.KSUID) ([]Event, error)
-	SaveEvents(aggregateID ksuid.KSUID, lastKnownEventID int, events []Event) error
+	LoadEvents(ctx context.Context, aggregateID ksuid.KSUID) ([]Event, error)
+	SaveEvents(ctx context.Context, aggregateID ksuid.KSUID, previousEventCount int, events []Event) error
 }

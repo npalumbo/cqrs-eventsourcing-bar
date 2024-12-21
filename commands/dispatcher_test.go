@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"golangsevillabar/commands"
@@ -20,6 +21,7 @@ type DispatcherTestSuite struct {
 	eventEmitter *mock_events.EventEmitter
 	eventStore   *mock_events.EventStore
 	aggregate    *mock_commands.Aggregate
+	ctx          context.Context
 }
 
 func (suite *DispatcherTestSuite) SetupTest() {
@@ -32,16 +34,18 @@ func (suite *DispatcherTestSuite) SetupTest() {
 	suite.eventEmitter = eventEmitter
 	suite.eventStore = eventStore
 	suite.aggregate = aggregate
+	suite.ctx = context.TODO()
 }
 
 func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToLoadEvents() {
 	// Given
 	aggregateId := ksuid.New()
 	errorLoadingEvents := errors.New("all broken")
-	suite.eventStore.On("LoadEvents", aggregateId).Return(nil, errorLoadingEvents)
+	suite.eventStore.On("LoadEvents", suite.ctx, aggregateId).Return(nil, errorLoadingEvents)
 
 	// When
 	err := suite.dispatcher.DispatchCommand(
+		context.TODO(),
 		commands.BaseCommand{aggregateId},
 	)
 
@@ -54,11 +58,12 @@ func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToLoadEve
 func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToApplyEventOnAggregate() {
 	// Given
 	aggregateId := ksuid.New()
-	suite.eventStore.On("LoadEvents", aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
+	suite.eventStore.On("LoadEvents", suite.ctx, aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
 	suite.aggregate.On("ApplyEvent", events.BaseEvent{ID: aggregateId}).Return(errors.New("all broken"))
 
 	// When
 	err := suite.dispatcher.DispatchCommand(
+		context.TODO(),
 		commands.BaseCommand{aggregateId},
 	)
 
@@ -71,12 +76,13 @@ func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToApplyEv
 func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToHandleCommand() {
 	// Given
 	aggregateId := ksuid.New()
-	suite.eventStore.On("LoadEvents", aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
+	suite.eventStore.On("LoadEvents", suite.ctx, aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
 	suite.aggregate.On("ApplyEvent", events.BaseEvent{ID: aggregateId}).Return(nil)
 	suite.aggregate.On("HandleCommand", commands.BaseCommand{ID: aggregateId}).Return(nil, errors.New("all broken"))
 
 	// When
 	err := suite.dispatcher.DispatchCommand(
+		context.TODO(),
 		commands.BaseCommand{aggregateId},
 	)
 
@@ -89,13 +95,14 @@ func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToHandleC
 func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToSaveEvents() {
 	// Given
 	aggregateId := ksuid.New()
-	suite.eventStore.On("LoadEvents", aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
+	suite.eventStore.On("LoadEvents", suite.ctx, aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
 	suite.aggregate.On("ApplyEvent", events.BaseEvent{ID: aggregateId}).Return(nil)
 	suite.aggregate.On("HandleCommand", commands.BaseCommand{ID: aggregateId}).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
-	suite.eventStore.On("SaveEvents", aggregateId, 1, []events.Event{events.BaseEvent{ID: aggregateId}}).Return(errors.New("all broken"))
+	suite.eventStore.On("SaveEvents", suite.ctx, aggregateId, 1, []events.Event{events.BaseEvent{ID: aggregateId}}).Return(errors.New("all broken"))
 
 	// When
 	err := suite.dispatcher.DispatchCommand(
+		context.TODO(),
 		commands.BaseCommand{aggregateId},
 	)
 
@@ -108,14 +115,15 @@ func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToSaveEve
 func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToEmitEvents() {
 	// Given
 	aggregateId := ksuid.New()
-	suite.eventStore.On("LoadEvents", aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
+	suite.eventStore.On("LoadEvents", suite.ctx, aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
 	suite.aggregate.On("ApplyEvent", events.BaseEvent{ID: aggregateId}).Return(nil)
 	suite.aggregate.On("HandleCommand", commands.BaseCommand{ID: aggregateId}).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
-	suite.eventStore.On("SaveEvents", aggregateId, 1, []events.Event{events.BaseEvent{ID: aggregateId}}).Return(nil)
+	suite.eventStore.On("SaveEvents", suite.ctx, aggregateId, 1, []events.Event{events.BaseEvent{ID: aggregateId}}).Return(nil)
 	suite.eventEmitter.On("EmitEvent", events.BaseEvent{ID: aggregateId}).Return(errors.New("all broken"))
 
 	// When
 	err := suite.dispatcher.DispatchCommand(
+		context.TODO(),
 		commands.BaseCommand{aggregateId},
 	)
 
@@ -128,14 +136,15 @@ func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToEmitEve
 func (suite *DispatcherTestSuite) TestDispatcher() {
 	// Given
 	aggregateId := ksuid.New()
-	suite.eventStore.On("LoadEvents", aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
+	suite.eventStore.On("LoadEvents", suite.ctx, aggregateId).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
 	suite.aggregate.On("ApplyEvent", events.BaseEvent{ID: aggregateId}).Return(nil)
 	suite.aggregate.On("HandleCommand", commands.BaseCommand{ID: aggregateId}).Return([]events.Event{events.BaseEvent{ID: aggregateId}}, nil)
-	suite.eventStore.On("SaveEvents", aggregateId, 1, []events.Event{events.BaseEvent{ID: aggregateId}}).Return(nil)
+	suite.eventStore.On("SaveEvents", suite.ctx, aggregateId, 1, []events.Event{events.BaseEvent{ID: aggregateId}}).Return(nil)
 	suite.eventEmitter.On("EmitEvent", events.BaseEvent{ID: aggregateId}).Return(nil)
 
 	// When
 	err := suite.dispatcher.DispatchCommand(
+		context.TODO(),
 		commands.BaseCommand{aggregateId},
 	)
 

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"golangsevillabar/events"
 	"reflect"
@@ -16,10 +17,10 @@ func CreateCommandDispatcher(eventStore events.EventStore, eventEmitter events.E
 	return &Dispatcher{eventStore: eventStore, eventEmitter: eventEmitter, aggregateFactory: aggregateFactory}
 }
 
-func (d *Dispatcher) DispatchCommand(command Command) error {
+func (d *Dispatcher) DispatchCommand(ctx context.Context, command Command) error {
 	aggregate := d.aggregateFactory.CreateAggregate()
 
-	events, err := d.eventStore.LoadEvents(command.GetID())
+	events, err := d.eventStore.LoadEvents(ctx, command.GetID())
 
 	if err != nil {
 		return fmt.Errorf("error loading events for aggregate: %s, reason: %w", command.GetID().String(), err)
@@ -38,7 +39,7 @@ func (d *Dispatcher) DispatchCommand(command Command) error {
 		return fmt.Errorf("error handling command [%s] for aggregate: %s, reason: %w", reflect.TypeOf(command).Name(), command.GetID().String(), err)
 	}
 
-	err = d.eventStore.SaveEvents(command.GetID(), len(events), newEvents)
+	err = d.eventStore.SaveEvents(ctx, command.GetID(), len(events), newEvents)
 
 	if err != nil {
 		return fmt.Errorf("error when saving events for aggregate: %s, reason: %w", command.GetID(), err)

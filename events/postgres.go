@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"reflect"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 
@@ -16,8 +15,7 @@ type postgresEventStore struct {
 	conn *pgx.Conn
 }
 
-func (es *postgresEventStore) LoadEvents(aggregateID ksuid.KSUID) ([]Event, error) {
-	ctx, _ := context.WithTimeout(context.Background(), 1*time.Minute)
+func (es *postgresEventStore) LoadEvents(ctx context.Context, aggregateID ksuid.KSUID) ([]Event, error) {
 	rows, err := es.conn.Query(ctx, "SELECT event_type, payload FROM events WHERE aggregate_id = $1 ORDER BY sequence_number ASC", aggregateID.String())
 
 	if err != nil {
@@ -42,8 +40,7 @@ func (es *postgresEventStore) LoadEvents(aggregateID ksuid.KSUID) ([]Event, erro
 	return events, nil
 }
 
-func (es *postgresEventStore) SaveEvents(aggregateID ksuid.KSUID, lastKnownEventID int, events []Event) error {
-	ctx := context.Background()
+func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.KSUID, previousEventCount int, events []Event) error {
 	tx, err := es.conn.BeginTx(ctx, pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
 		AccessMode: pgx.ReadWrite,
@@ -62,7 +59,7 @@ func (es *postgresEventStore) SaveEvents(aggregateID ksuid.KSUID, lastKnownEvent
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, "INSERT INTO events (aggregate_id, sequence_number, timestamp, event_type, payload) VALUES ($1, $2, NOW(), $3, $4)", aggregateID, lastKnownEventID+i+1, reflect.TypeOf(event).String(), payload)
+		_, err = tx.Exec(ctx, "INSERT INTO events (aggregate_id, sequence_number, timestamp, event_type, payload) VALUES ($1, $2, NOW(), $3, $4)", aggregateID, previousEventCount+i+1, reflect.TypeOf(event).String(), payload)
 		if err != nil {
 			return err
 		}
