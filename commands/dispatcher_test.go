@@ -69,7 +69,7 @@ func (suite *DispatcherTestSuite) TestDispatcherReturnsErrorWhenFailingToApplyEv
 
 	// Then
 	if assert.Error(suite.T(), err) {
-		assert.Equal(suite.T(), fmt.Sprintf("error applying past event [BaseEvent-#0] for aggregate: %s, reason: all broken", aggregateId), err.Error())
+		assert.Equal(suite.T(), fmt.Sprintf("error applying past event [events.BaseEvent-#0] for aggregate: %s, reason: all broken", aggregateId), err.Error())
 	}
 }
 

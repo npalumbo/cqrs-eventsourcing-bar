@@ -29,7 +29,7 @@ func (d *Dispatcher) DispatchCommand(ctx context.Context, command Command) error
 	for i, event := range events {
 		err = aggregate.ApplyEvent(event)
 		if err != nil {
-			return fmt.Errorf("error applying past event [%s-#%d] for aggregate: %s, reason: %w", reflect.TypeOf(event).Name(), i, command.GetID().String(), err)
+			return fmt.Errorf("error applying past event [%s-#%d] for aggregate: %s, reason: %w", event.GetEventType(), i, command.GetID().String(), err)
 		}
 	}
 
@@ -48,7 +48,7 @@ func (d *Dispatcher) DispatchCommand(ctx context.Context, command Command) error
 	for _, event := range newEvents {
 		err = d.eventEmitter.EmitEvent(event)
 		if err != nil {
-			return fmt.Errorf("error when emitting event [%s] for aggregate: %s, reason: %w", reflect.TypeOf(event), command.GetID(), err)
+			return fmt.Errorf("error when emitting event [%s] for aggregate: %s, reason: %w", event.GetEventType(), command.GetID(), err)
 		}
 	}
 

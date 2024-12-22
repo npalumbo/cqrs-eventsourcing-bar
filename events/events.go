@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"golangsevillabar/shared"
+	"reflect"
 
 	"github.com/segmentio/ksuid"
 )
 
 type Event interface {
 	GetID() ksuid.KSUID
+	GetEventType() string
 }
 
 type BaseEvent struct {
@@ -18,6 +20,10 @@ type BaseEvent struct {
 
 func (event BaseEvent) GetID() ksuid.KSUID {
 	return event.ID
+}
+
+func (event BaseEvent) GetEventType() string {
+	return reflect.TypeOf(event).String()
 }
 
 type TabOpened struct {

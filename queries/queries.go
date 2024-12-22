@@ -17,11 +17,7 @@ type OpenTabQueries interface {
 	TabIdForTable(table int) (ksuid.KSUID, error)
 	TabForTable(table int) (TabStatus, error)
 	TodoListForWaiter(waiter string) map[int][]TabItem
-	EventListener
-}
-
-type EventListener interface {
-	HandleEvent(e events.Event) error
+	events.EventListener
 }
 
 func (o *openTabs) handleTabOpened(e events.TabOpened) error {

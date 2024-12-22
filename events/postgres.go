@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
-	"reflect"
 
 	"github.com/jackc/pgx/v5"
 
@@ -59,7 +58,7 @@ func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, "INSERT INTO events (aggregate_id, sequence_number, timestamp, event_type, payload) VALUES ($1, $2, NOW(), $3, $4)", aggregateID, previousEventCount+i+1, reflect.TypeOf(event).String(), payload)
+		_, err = tx.Exec(ctx, "INSERT INTO events (aggregate_id, sequence_number, timestamp, event_type, payload) VALUES ($1, $2, NOW(), $3, $4)", aggregateID, previousEventCount+i+1, event.GetEventType(), payload)
 		if err != nil {
 			return err
 		}
