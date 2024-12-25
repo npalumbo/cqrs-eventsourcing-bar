@@ -3,6 +3,8 @@ package events
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
+	"log/slog"
 
 	"github.com/nats-io/nats.go"
 )
@@ -14,8 +16,8 @@ type NatsEmitterSubscriber struct {
 }
 
 type wrappedEvent struct {
-	eventType string
-	event     Event
+	EventType string
+	Payload   []byte
 }
 
 func NewNatsEmitterSubscriber(url string, eventListener EventListener) (*NatsEmitterSubscriber, error) {
@@ -40,12 +42,16 @@ func (n *NatsEmitterSubscriber) Close() {
 }
 
 func (n *NatsEmitterSubscriber) encodeMessage(event Event) ([]byte, error) {
+	payload, err := json.Marshal(event)
+	if err != nil {
+		return nil, err
+	}
 	wrappedEvent := wrappedEvent{
-		eventType: event.GetEventType(),
-		event:     event,
+		EventType: GetEventTypeAsString(event),
+		Payload:   payload,
 	}
 	b := bytes.Buffer{}
-	err := gob.NewEncoder(&b).Encode(wrappedEvent)
+	err = gob.NewEncoder(&b).Encode(wrappedEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +75,17 @@ func (n *NatsEmitterSubscriber) decodeMessage(data []byte, m interface{}) error 
 func (n *NatsEmitterSubscriber) OnCreatedEvent() (err error) {
 	msg := wrappedEvent{}
 	n.eventCreatedSub, err = n.conn.Subscribe("event", func(m *nats.Msg) {
-		n.decodeMessage(m.Data, &msg)
-		n.eventListener.HandleEvent(msg.event)
+		err = n.decodeMessage(m.Data, &msg)
+		if err == nil {
+			event, err := UnmarshallPayload(msg.EventType, msg.Payload)
+			if err == nil {
+				n.eventListener.HandleEvent(event)
+			}
+		}
+		if err != nil {
+			slog.Error("error when processing incoming event", slog.Any("error", err.Error()))
+		}
 	})
-	return
+	return err
 
 }

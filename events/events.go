@@ -11,7 +11,6 @@ import (
 
 type Event interface {
 	GetID() ksuid.KSUID
-	GetEventType() string
 }
 
 type BaseEvent struct {
@@ -22,8 +21,8 @@ func (event BaseEvent) GetID() ksuid.KSUID {
 	return event.ID
 }
 
-func (event BaseEvent) GetEventType() string {
-	return reflect.TypeOf(event).String()
+func GetEventTypeAsString(event Event) string {
+	return reflect.TypeOf(event).Name()
 }
 
 type TabOpened struct {
@@ -49,29 +48,29 @@ type TabClosed struct {
 	Tip         float64
 }
 
-func UnmarshallPayload(typeName, payload string) (Event, error) {
+func UnmarshallPayload(typeName string, payload []byte) (Event, error) {
 	switch typeName {
 	case "TabOpened":
 		var event TabOpened
-		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+		if err := json.Unmarshal(payload, &event); err != nil {
 			return TabOpened{}, fmt.Errorf("could not create TabOpened event from payload: %s", payload)
 		}
 		return event, nil
 	case "DrinksOrdered":
 		var event DrinksOrdered
-		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+		if err := json.Unmarshal(payload, &event); err != nil {
 			return DrinksOrdered{}, fmt.Errorf("could not create DrinksOrdered event from payload: %s", payload)
 		}
 		return event, nil
 	case "DrinkServed":
 		var event DrinkServed
-		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+		if err := json.Unmarshal(payload, &event); err != nil {
 			return DrinkServed{}, fmt.Errorf("could not create DrinkServed event from payload: %s", payload)
 		}
 		return event, nil
 	case "TabClosed":
 		var event TabClosed
-		if err := json.Unmarshal([]byte(payload), &event); err != nil {
+		if err := json.Unmarshal(payload, &event); err != nil {
 			return TabClosed{}, fmt.Errorf("could not create TabClosed event from payload: %s", payload)
 		}
 		return event, nil

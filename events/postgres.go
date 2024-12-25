@@ -30,7 +30,7 @@ func (es *postgresEventStore) LoadEvents(ctx context.Context, aggregateID ksuid.
 		if err := rows.Scan(&eventType, &payload); err != nil {
 			return nil, err
 		}
-		event, err := UnmarshallPayload(eventType, string(payload))
+		event, err := UnmarshallPayload(eventType, payload)
 		if err != nil {
 			return nil, err
 		}
@@ -58,7 +58,7 @@ func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, "INSERT INTO events (aggregate_id, sequence_number, timestamp, event_type, payload) VALUES ($1, $2, NOW(), $3, $4)", aggregateID, previousEventCount+i+1, event.GetEventType(), payload)
+		_, err = tx.Exec(ctx, "INSERT INTO events (aggregate_id, sequence_number, timestamp, event_type, payload) VALUES ($1, $2, NOW(), $3, $4)", aggregateID, previousEventCount+i+1, GetEventTypeAsString(event), payload)
 		if err != nil {
 			return err
 		}

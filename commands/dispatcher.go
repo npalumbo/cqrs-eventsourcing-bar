@@ -20,16 +20,16 @@ func CreateCommandDispatcher(eventStore events.EventStore, eventEmitter events.E
 func (d *Dispatcher) DispatchCommand(ctx context.Context, command Command) error {
 	aggregate := d.aggregateFactory.CreateAggregate()
 
-	events, err := d.eventStore.LoadEvents(ctx, command.GetID())
+	eventsLoaded, err := d.eventStore.LoadEvents(ctx, command.GetID())
 
 	if err != nil {
 		return fmt.Errorf("error loading events for aggregate: %s, reason: %w", command.GetID().String(), err)
 	}
 
-	for i, event := range events {
+	for i, event := range eventsLoaded {
 		err = aggregate.ApplyEvent(event)
 		if err != nil {
-			return fmt.Errorf("error applying past event [%s-#%d] for aggregate: %s, reason: %w", event.GetEventType(), i, command.GetID().String(), err)
+			return fmt.Errorf("error applying past event [%s-#%d] for aggregate: %s, reason: %w", events.GetEventTypeAsString(event), i, command.GetID().String(), err)
 		}
 	}
 
@@ -39,7 +39,7 @@ func (d *Dispatcher) DispatchCommand(ctx context.Context, command Command) error
 		return fmt.Errorf("error handling command [%s] for aggregate: %s, reason: %w", reflect.TypeOf(command).Name(), command.GetID().String(), err)
 	}
 
-	err = d.eventStore.SaveEvents(ctx, command.GetID(), len(events), newEvents)
+	err = d.eventStore.SaveEvents(ctx, command.GetID(), len(eventsLoaded), newEvents)
 
 	if err != nil {
 		return fmt.Errorf("error when saving events for aggregate: %s, reason: %w", command.GetID(), err)
@@ -48,7 +48,7 @@ func (d *Dispatcher) DispatchCommand(ctx context.Context, command Command) error
 	for _, event := range newEvents {
 		err = d.eventEmitter.EmitEvent(event)
 		if err != nil {
-			return fmt.Errorf("error when emitting event [%s] for aggregate: %s, reason: %w", event.GetEventType(), command.GetID(), err)
+			return fmt.Errorf("error when emitting event [%s] for aggregate: %s, reason: %w", events.GetEventTypeAsString(event), command.GetID(), err)
 		}
 	}
 
