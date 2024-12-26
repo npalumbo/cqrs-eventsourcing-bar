@@ -1,7 +1,8 @@
-package events_test
+package messaging_test
 
 import (
 	"golangsevillabar/events"
+	"golangsevillabar/messaging"
 	"testing"
 	"time"
 
@@ -15,9 +16,10 @@ import (
 
 type NatsTestSuite struct {
 	suite.Suite
-	natsEmitterSusbcriber *events.NatsEmitterSubscriber
-	natsServer            *server.Server
-	eventListener         *mock_events.EventListener
+	NatsEventEmitter    *messaging.NatsEventEmitter
+	NatsEventSubscriber *messaging.NatsEventSubscriber
+	natsServer          *server.Server
+	eventListener       *mock_events.EventListener
 }
 
 func (suite *NatsTestSuite) SetupSuite() {
@@ -31,17 +33,27 @@ func (suite *NatsTestSuite) SetupSuite() {
 	suite.natsServer.Start()
 
 	natsURL := suite.natsServer.ClientURL()
-	natsEmitterSusbcriber, err := events.NewNatsEmitterSubscriber(natsURL, eventListener)
+	natsEventEmitter, err := messaging.NewNatsEventEmitter(natsURL)
 	if err != nil {
-		suite.T().Fail()
+		suite.T().Error(err.Error())
 	}
-	suite.natsEmitterSusbcriber = natsEmitterSusbcriber
+	natsEventSubscriber, err := messaging.NewNatsEventSubscriber(natsURL, eventListener)
+	if err != nil {
+		suite.T().Error(err.Error())
+	}
+	suite.NatsEventEmitter = natsEventEmitter
+	suite.NatsEventSubscriber = natsEventSubscriber
 	suite.eventListener = eventListener
 }
 
 func (suite *NatsTestSuite) TestEmitEvent() {
 	// Given
-	suite.natsEmitterSusbcriber.OnCreatedEvent()
+	err := suite.NatsEventSubscriber.OnCreatedEvent()
+
+	if err != nil {
+		assert.Fail(suite.T(), err.Error())
+	}
+
 	aggregateId := ksuid.New()
 	tabOpened := events.TabOpened{
 		BaseEvent:   events.BaseEvent{ID: aggregateId},
@@ -49,11 +61,11 @@ func (suite *NatsTestSuite) TestEmitEvent() {
 		Waiter:      "waiter_1",
 	}
 	suite.eventListener.On("HandleEvent", tabOpened).Return(nil)
-	// When
 
-	err := suite.natsEmitterSusbcriber.EmitEvent(tabOpened)
+	// When
+	err = suite.NatsEventEmitter.EmitEvent(tabOpened)
 	if err != nil {
-		assert.Fail(suite.T(), "error emitting event")
+		assert.Fail(suite.T(), err.Error())
 	}
 
 	// Then
