@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type NatsTestSuite struct {
+type NatsRoundtripTestSuite struct {
 	suite.Suite
 	NatsEventEmitter    *messaging.NatsEventEmitter
 	NatsEventSubscriber *messaging.NatsEventSubscriber
@@ -22,7 +22,7 @@ type NatsTestSuite struct {
 	eventListener       *mock_events.EventListener
 }
 
-func (suite *NatsTestSuite) SetupSuite() {
+func (suite *NatsRoundtripTestSuite) SetupSuite() {
 	eventListener := mock_events.NewEventListener(suite.T())
 	opts := server.Options{
 		Host: "localhost",
@@ -46,7 +46,7 @@ func (suite *NatsTestSuite) SetupSuite() {
 	suite.eventListener = eventListener
 }
 
-func (suite *NatsTestSuite) TestEmitEvent() {
+func (suite *NatsRoundtripTestSuite) TestEmitEvent() {
 	// Given
 	err := suite.NatsEventSubscriber.OnCreatedEvent()
 
@@ -74,10 +74,10 @@ func (suite *NatsTestSuite) TestEmitEvent() {
 	suite.eventListener.AssertNumberOfCalls(suite.T(), "HandleEvent", 1)
 }
 
-func (suite *NatsTestSuite) TearDownSuite() {
+func (suite *NatsRoundtripTestSuite) TearDownSuite() {
 	suite.natsServer.Shutdown()
 }
 
 func TestNatsTestSuite(t *testing.T) {
-	suite.Run(t, new(NatsTestSuite))
+	suite.Run(t, new(NatsRoundtripTestSuite))
 }
