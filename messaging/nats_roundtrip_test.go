@@ -46,7 +46,7 @@ func (suite *NatsRoundtripTestSuite) SetupSuite() {
 	suite.eventListener = eventListener
 }
 
-func (suite *NatsRoundtripTestSuite) TestEmitEvent() {
+func (suite *NatsRoundtripTestSuite) TestEmitEventShouldCallEventListener() {
 	// Given
 	err := suite.NatsEventSubscriber.OnCreatedEvent()
 
