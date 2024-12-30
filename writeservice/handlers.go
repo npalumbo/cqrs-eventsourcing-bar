@@ -1,13 +1,26 @@
 package main
 
 import (
+	"fmt"
 	"golangsevillabar/commands"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/segmentio/ksuid"
 )
+
+func setupServer() error {
+	http.HandleFunc("/openTab", openTabHandler)
+	http.HandleFunc("/placeOrder", placeOrderHandler)
+	http.HandleFunc("/markDrinksServed", markDrinksServedHandler)
+	http.HandleFunc("/closeTab", closeTabHandler)
+
+	slog.Info("Write server listening on :8080")
+
+	return http.ListenAndServe(":8080", nil)
+}
 
 func openTabHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -50,9 +63,16 @@ func placeOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query()
 
-	id := q.Get("id")
-	if id == "" {
+	idStr := q.Get("id")
+	if idStr == "" {
 		http.Error(w, "id needs to be defined", http.StatusBadRequest)
+		return
+	}
+
+	id, err := ksuid.Parse(idStr)
+
+	if err != nil {
+		http.Error(w, "could not parse id", http.StatusBadRequest)
 		return
 	}
 
@@ -63,8 +83,101 @@ func placeOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderedItems, err := menuItemRepository.ReadItems(items)
+	orderedItems, err := menuItemRepository.ReadItems(r.Context(), items)
 
+	if err != nil {
+		http.Error(w, "could read items from DB", http.StatusBadRequest)
+		return
+	}
+
+	err = dispatcher.DispatchCommand(r.Context(), commands.PlaceOrder{
+		BaseCommand: commands.BaseCommand{ID: id},
+		Items:       orderedItems,
+	})
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error processing placeOrder request: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func markDrinksServedHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := r.URL.Query()
+
+	idStr := q.Get("id")
+	if idStr == "" {
+		http.Error(w, "id needs to be defined", http.StatusBadRequest)
+		return
+	}
+
+	id, err := ksuid.Parse(idStr)
+
+	if err != nil {
+		http.Error(w, "could not parse id", http.StatusBadRequest)
+		return
+	}
+
+	menuNumbers, err := parseToInts(q.Get("menu_numbers"))
+
+	if err != nil {
+		http.Error(w, "could not parse items", http.StatusBadRequest)
+		return
+	}
+
+	err = dispatcher.DispatchCommand(r.Context(), commands.MarkDrinksServed{
+		BaseCommand: commands.BaseCommand{ID: id},
+		MenuNumbers: menuNumbers,
+	})
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error processing markDrinksServed request: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func closeTabHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := r.URL.Query()
+
+	idStr := q.Get("id")
+	if idStr == "" {
+		http.Error(w, "id needs to be defined", http.StatusBadRequest)
+		return
+	}
+
+	id, err := ksuid.Parse(idStr)
+
+	if err != nil {
+		http.Error(w, "could not parse id", http.StatusBadRequest)
+		return
+	}
+
+	amountPaid, err := strconv.ParseFloat(q.Get("amount_paid"), 64)
+
+	if err != nil {
+		http.Error(w, "could not parse amount paid", http.StatusBadRequest)
+		return
+	}
+
+	err = dispatcher.DispatchCommand(r.Context(), commands.CloseTab{
+		BaseCommand: commands.BaseCommand{ID: id},
+		AmountPaid:  amountPaid,
+	})
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error processing closeTab request: %v", err), http.StatusInternalServerError)
+		return
+	}
 }
 
 func parseToInts(str string) ([]int, error) {

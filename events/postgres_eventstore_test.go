@@ -23,7 +23,7 @@ type PostgresEventStoreTestSuite struct {
 
 func (suite *PostgresEventStoreTestSuite) SetupSuite() {
 	suite.ctx = context.Background()
-	pgContainer, err := testhelpers.CreatePostgresContainer(suite.ctx)
+	pgContainer, err := testhelpers.CreatePostgresContainer(suite.T(), suite.ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

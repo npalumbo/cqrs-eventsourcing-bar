@@ -7,7 +7,6 @@ import (
 	"golangsevillabar/events"
 	"golangsevillabar/messaging"
 	"golangsevillabar/shared"
-	"net/http"
 )
 
 var dispatcher *commands.Dispatcher
@@ -15,21 +14,20 @@ var menuItemRepository shared.MenuItemRepository
 
 func main() {
 	ctx := context.Background()
-	eventStore, err := events.NewPostgresEventStore(ctx, "")
-
+	const dbConnectionString = "postgresql://postgres:mysecretpassword@localhost:5432/mydb"
+	eventStore, err := events.NewPostgresEventStore(ctx, dbConnectionString)
 	panicIfErrors(err)
 
-	eventEmitter, err := messaging.NewNatsEventEmitter("")
+	menuItemRepository, err = shared.NewPostgresMenuItemRepository(ctx, dbConnectionString)
+	panicIfErrors(err)
+
+	eventEmitter, err := messaging.NewNatsEventEmitter("nats://localhost:4222")
 
 	panicIfErrors(err)
 
 	dispatcher = commands.CreateCommandDispatcher(eventStore, eventEmitter, commands.TabAggregateFactory{})
 
-	http.HandleFunc("/openTab", openTabHandler)
-
-	fmt.Println("Write server listening on :8080")
-
-	err = http.ListenAndServe(":8080", nil)
+	err = setupServer()
 
 	panicIfErrors(err)
 }

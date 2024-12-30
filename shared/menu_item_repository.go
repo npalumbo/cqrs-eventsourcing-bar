@@ -1,7 +1,9 @@
 package shared
 
+import "context"
+
 type MenuItemRepository interface {
-	ReadItems(menuItems []int) ([]OrderedItem, error)
+	ReadItems(ctx context.Context, menuItems []int) ([]OrderedItem, error)
 }
 
 type OrderedItem struct {

@@ -1,0 +1,19 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: "postgres:16-alpine"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: mydb
+    restart: always
+    volumes:
+    - ./init-db.sql:/docker-entrypoint-initdb.d/1.sql:ro
+    ports:
+      - 5432:5432
+  nats:
+    image: "nats-streaming:0.9.2"
+    restart: always
+    ports:
+      - 4222:4222
