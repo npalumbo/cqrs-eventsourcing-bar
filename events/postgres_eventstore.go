@@ -39,7 +39,7 @@ func (es *postgresEventStore) LoadEvents(ctx context.Context, aggregateID ksuid.
 	return events, nil
 }
 
-func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.KSUID, previousEventCount int, events []Event) error {
+func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.KSUID, previousEventCount int, events []Event) (err error) {
 	tx, err := es.conn.BeginTx(ctx, pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
 		AccessMode: pgx.ReadWrite,
@@ -48,8 +48,10 @@ func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.
 		return err
 	}
 	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			slog.Error("error, rollback", slog.String("error", err.Error()))
+		if err != nil {
+			if err := tx.Rollback(ctx); err != nil {
+				slog.Error("error, rollback", slog.String("error", err.Error()))
+			}
 		}
 	}()
 

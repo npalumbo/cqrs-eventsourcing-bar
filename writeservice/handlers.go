@@ -1,12 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"golangsevillabar/commands"
+	"golangsevillabar/writeservice/model"
+	"io"
 	"log/slog"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/segmentio/ksuid"
 )
@@ -23,70 +24,44 @@ func setupServer() error {
 }
 
 func openTabHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	var request model.OpenTabRequest
+	shouldReturn := readRequest(w, r, &request)
+	if shouldReturn {
 		return
 	}
 
-	q := r.URL.Query()
-
-	tableNumberStr := q.Get("table_number")
-	tableNumber, err := strconv.Atoi(tableNumberStr)
-	if err != nil {
-		http.Error(w, "Invalid table number", http.StatusBadRequest)
-		return
-	}
-
-	waiter := q.Get("waiter")
-	if waiter == "" {
-		http.Error(w, "Waiter needs to be defined", http.StatusBadRequest)
-		return
-	}
-
-	err = dispatcher.DispatchCommand(r.Context(), commands.OpenTab{
+	err := dispatcher.DispatchCommand(r.Context(), commands.OpenTab{
 		BaseCommand: commands.BaseCommand{ID: ksuid.New()},
-		TableNumber: tableNumber,
-		Waiter:      waiter,
+		TableNumber: request.TableNumber,
+		Waiter:      request.Waiter,
 	})
 
 	if err != nil {
-		http.Error(w, "Error processing openTab request", http.StatusInternalServerError)
+		returnJsonError(w, fmt.Sprintf("Error processing openTab request: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	returnJsonOk(w)
 }
 
 func placeOrderHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	var request model.PlaceOrderRequest
+	shouldReturn := readRequest(w, r, &request)
+	if shouldReturn {
 		return
 	}
 
-	q := r.URL.Query()
-
-	idStr := q.Get("id")
-	if idStr == "" {
-		http.Error(w, "id needs to be defined", http.StatusBadRequest)
-		return
-	}
-
-	id, err := ksuid.Parse(idStr)
+	id, err := ksuid.Parse(request.TabId)
 
 	if err != nil {
-		http.Error(w, "could not parse id", http.StatusBadRequest)
+		returnJsonError(w, "could not parse id", http.StatusBadRequest)
 		return
 	}
 
-	items, err := parseToInts(q.Get("items"))
+	orderedItems, err := menuItemRepository.ReadItems(r.Context(), request.MenuItems)
 
 	if err != nil {
-		http.Error(w, "could not parse items", http.StatusBadRequest)
-		return
-	}
-
-	orderedItems, err := menuItemRepository.ReadItems(r.Context(), items)
-
-	if err != nil {
-		http.Error(w, "could read items from DB", http.StatusBadRequest)
+		returnJsonError(w, "could not read items from DB", http.StatusBadRequest)
 		return
 	}
 
@@ -96,98 +71,134 @@ func placeOrderHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error processing placeOrder request: %v", err), http.StatusInternalServerError)
+		returnJsonError(w, fmt.Sprintf("Error processing placeOrder request: %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	returnJsonOk(w)
 }
 
 func markDrinksServedHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	var request model.MarkDrinksServedRequest
+	shouldReturn := readRequest(w, r, &request)
+	if shouldReturn {
 		return
 	}
 
-	q := r.URL.Query()
-
-	idStr := q.Get("id")
-	if idStr == "" {
-		http.Error(w, "id needs to be defined", http.StatusBadRequest)
-		return
-	}
-
-	id, err := ksuid.Parse(idStr)
+	id, err := ksuid.Parse(request.TabId)
 
 	if err != nil {
-		http.Error(w, "could not parse id", http.StatusBadRequest)
-		return
-	}
-
-	menuNumbers, err := parseToInts(q.Get("menu_numbers"))
-
-	if err != nil {
-		http.Error(w, "could not parse items", http.StatusBadRequest)
+		returnJsonError(w, "could not parse id", http.StatusBadRequest)
 		return
 	}
 
 	err = dispatcher.DispatchCommand(r.Context(), commands.MarkDrinksServed{
 		BaseCommand: commands.BaseCommand{ID: id},
-		MenuNumbers: menuNumbers,
+		MenuNumbers: request.MenuNumbers,
 	})
 
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error processing markDrinksServed request: %v", err), http.StatusInternalServerError)
+		returnJsonError(w, fmt.Sprintf("Error processing markDrinksServed request: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	returnJsonOk(w)
 }
 
 func closeTabHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	var request model.CloseTabRequest
+	shouldReturn := readRequest(w, r, &request)
+	if shouldReturn {
 		return
 	}
 
-	q := r.URL.Query()
-
-	idStr := q.Get("id")
-	if idStr == "" {
-		http.Error(w, "id needs to be defined", http.StatusBadRequest)
-		return
-	}
-
-	id, err := ksuid.Parse(idStr)
+	id, err := ksuid.Parse(request.TabId)
 
 	if err != nil {
-		http.Error(w, "could not parse id", http.StatusBadRequest)
-		return
-	}
-
-	amountPaid, err := strconv.ParseFloat(q.Get("amount_paid"), 64)
-
-	if err != nil {
-		http.Error(w, "could not parse amount paid", http.StatusBadRequest)
+		returnJsonError(w, "could not parse id", http.StatusBadRequest)
 		return
 	}
 
 	err = dispatcher.DispatchCommand(r.Context(), commands.CloseTab{
 		BaseCommand: commands.BaseCommand{ID: id},
-		AmountPaid:  amountPaid,
+		AmountPaid:  request.AmountPaid,
 	})
 
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error processing closeTab request: %v", err), http.StatusInternalServerError)
+		returnJsonError(w, fmt.Sprintf("Error processing closeTab request: %v", err), http.StatusInternalServerError)
 		return
+	}
+
+	returnJsonOk(w)
+}
+
+func readRequest[T any](w http.ResponseWriter, r *http.Request, data *T) (errored bool) {
+	if r.Method != http.MethodPost {
+		returnJsonError(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		errored = true
+	}
+
+	body, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		returnJsonError(w, "Error reading request body", http.StatusBadRequest)
+		errored = true
+	}
+
+	err = json.Unmarshal(body, data)
+	if err != nil {
+		returnJsonError(w, "Invalid JSON request", http.StatusBadRequest)
+		errored = true
+	}
+	return
+}
+
+func returnJsonError(w http.ResponseWriter, error string, code int) {
+	h := w.Header()
+
+	h.Del("Content-Length")
+
+	h.Set("Content-Type", "application/json")
+	h.Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
+
+	response := model.CommandReponse{
+		OK:    false,
+		Error: error,
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error encoding json, original error: %s", error), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error writing json response, original error: %s", error), http.StatusInternalServerError)
 	}
 }
 
-func parseToInts(str string) ([]int, error) {
-	var ints []int
-	for _, s := range strings.Split(str, ",") {
-		i, err := strconv.Atoi(s)
-		if err != nil {
-			return nil, err
-		}
-		ints = append(ints, i)
+func returnJsonOk(w http.ResponseWriter) {
+	h := w.Header()
+
+	h.Del("Content-Length")
+
+	h.Set("Content-Type", "application/json")
+	h.Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusOK)
+
+	response := model.CommandReponse{
+		OK:    true,
+		Error: "",
 	}
-	return ints, nil
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, "error encoding json, command processed sucesssfully", http.StatusOK)
+		return
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		http.Error(w, "error writing json response, command processed sucesssfully", http.StatusOK)
+	}
 }
