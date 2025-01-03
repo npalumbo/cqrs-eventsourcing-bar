@@ -109,7 +109,7 @@ func (o *openTabs) InvoiceForTable(table int) (TabInvoice, error) {
 	total := funk.SumFloat64(mapped.([]float64))
 
 	return TabInvoice{
-		TabID:            tabId,
+		TabID:            tabId.String(),
 		TableNumber:      table,
 		Items:            slices.Clone(tab.Served),
 		Total:            total,
@@ -131,7 +131,7 @@ func (o *openTabs) TabForTable(table int) (TabStatus, error) {
 	tab := o.todoByTab[tabId]
 
 	return TabStatus{
-		TabID:       tabId,
+		TabID:       tabId.String(),
 		TableNumber: table,
 		ToServe:     slices.Clone(tab.ToServe),
 		Served:      slices.Clone(tab.Served),
@@ -192,29 +192,29 @@ func CreateOpenTabs() OpenTabQueries {
 }
 
 type TabInvoice struct {
-	TabID            ksuid.KSUID
-	TableNumber      int
-	Items            []TabItem
-	Total            float64
-	HasUnservedItems bool
+	TabID            string    `json:"tab_id"`
+	TableNumber      int       `json:"table_number"`
+	Items            []TabItem `json:"items"`
+	Total            float64   `json:"total"`
+	HasUnservedItems bool      `json:"has_unserved_items"`
 }
 
 type TabStatus struct {
-	TabID       ksuid.KSUID
-	TableNumber int
-	ToServe     []TabItem
-	Served      []TabItem
+	TabID       string    `json:"tab_id"`
+	TableNumber int       `json:"table_number"`
+	ToServe     []TabItem `json:"to_serve"`
+	Served      []TabItem `json:"served"`
 }
 
 type TabItem struct {
-	MenuNumber  int
-	Description string
-	Price       float64
+	MenuNumber  int     `json:"menu_number"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
 }
 
 type Tab struct {
-	TableNumber int
-	Waiter      string
-	ToServe     []TabItem
-	Served      []TabItem
+	TableNumber int       `json:"table_number"`
+	Waiter      string    `json:"waiter"`
+	ToServe     []TabItem `json:"to_serve"`
+	Served      []TabItem `json:"served"`
 }

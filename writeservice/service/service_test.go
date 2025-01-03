@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type WriteServieTestSuite struct {
+type WriteServiceTestSuite struct {
 	suite.Suite
 	menuItemRepository *shared_mocks.MenuItemRepository
 	commandDispatcher  *commands_mocks.CommandDispatcher
@@ -29,7 +29,7 @@ type WriteServieTestSuite struct {
 	ctx                context.Context
 }
 
-func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfNotPost() {
+func (suite *WriteServiceTestSuite) TestOpenTabHandlerReturnsErrorIfNotPost() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodGet, "", nil)
@@ -44,7 +44,7 @@ func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfNotPost() {
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Method Not Allowed\"}", string(bytes))
 }
-func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfEmptyBody() {
+func (suite *WriteServiceTestSuite) TestOpenTabHandlerReturnsErrorIfEmptyBody() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodPost, "", nil)
@@ -60,7 +60,7 @@ func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfEmptyBody() {
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Empty body\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfInvalidJson() {
+func (suite *WriteServiceTestSuite) TestOpenTabHandlerReturnsErrorIfInvalidJson() {
 
 	// Given
 	rr := httptest.NewRecorder()
@@ -77,7 +77,7 @@ func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfInvalidJson()
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Invalid JSON request\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfDispatcherReturnsError() {
+func (suite *WriteServiceTestSuite) TestOpenTabHandlerReturnsErrorIfDispatcherReturnsError() {
 
 	// Given
 	openTabRequest := model.OpenTabRequest{
@@ -102,7 +102,7 @@ func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsErrorIfDispatcherRet
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Error processing openTab request: error dispatching command\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsOkIfNoError() {
+func (suite *WriteServiceTestSuite) TestOpenTabHandlerReturnsOkIfNoError() {
 
 	// Given
 	openTabRequest := model.OpenTabRequest{
@@ -133,7 +133,7 @@ func (suite *WriteServieTestSuite) TestOpenTabHandlerReturnsOkIfNoError() {
 	assert.NotNil(suite.T(), capturedCommand.ID)
 }
 
-func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfNotPost() {
+func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfNotPost() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodGet, "", nil)
@@ -148,7 +148,7 @@ func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfNotPost() 
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Method Not Allowed\"}", string(bytes))
 }
-func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfEmptyBody() {
+func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfEmptyBody() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodPost, "", nil)
@@ -164,7 +164,7 @@ func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfEmptyBody(
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Empty body\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfInvalidJson() {
+func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfInvalidJson() {
 
 	// Given
 	rr := httptest.NewRecorder()
@@ -181,7 +181,7 @@ func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfInvalidJso
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Invalid JSON request\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfCannotParseId() {
+func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfCannotParseId() {
 
 	// Given
 	placeOrderRequest := model.PlaceOrderRequest{
@@ -204,7 +204,7 @@ func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfCannotPars
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"could not parse id\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfMenuItemRepositoryReturnsError() {
+func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfMenuItemRepositoryReturnsError() {
 
 	// Given
 	placeOrderRequest := model.PlaceOrderRequest{
@@ -229,7 +229,7 @@ func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfMenuItemRe
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"could not read items from DB\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfDispatcherReturnsError() {
+func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfDispatcherReturnsError() {
 
 	// Given
 	placeOrderRequest := model.PlaceOrderRequest{
@@ -259,7 +259,7 @@ func (suite *WriteServieTestSuite) TestPlaceOrderHandlerReturnsErrorIfDispatcher
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Error processing placeOrder request: error dispatching command\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfNotPost() {
+func (suite *WriteServiceTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfNotPost() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodGet, "", nil)
@@ -274,7 +274,7 @@ func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfNotP
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Method Not Allowed\"}", string(bytes))
 }
-func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfEmptyBody() {
+func (suite *WriteServiceTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfEmptyBody() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodPost, "", nil)
@@ -290,7 +290,7 @@ func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfEmpt
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Empty body\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfInvalidJson() {
+func (suite *WriteServiceTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfInvalidJson() {
 
 	// Given
 	rr := httptest.NewRecorder()
@@ -307,7 +307,7 @@ func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfInva
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Invalid JSON request\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfCannotParseId() {
+func (suite *WriteServiceTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfCannotParseId() {
 
 	// Given
 	markDrinksServedRequest := model.MarkDrinksServedRequest{
@@ -330,7 +330,7 @@ func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfCann
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"could not parse id\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfDispatcherReturnsError() {
+func (suite *WriteServiceTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfDispatcherReturnsError() {
 
 	// Given
 	markDrinksServed := model.MarkDrinksServedRequest{
@@ -355,7 +355,7 @@ func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsErrorIfDisp
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Error processing markDrinksServed request: error dispatching command\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsOkIfNoError() {
+func (suite *WriteServiceTestSuite) TestMarkDrinksServedHandlerReturnsOkIfNoError() {
 
 	// Given
 	markDrinksServedRequest := model.MarkDrinksServedRequest{
@@ -385,7 +385,7 @@ func (suite *WriteServieTestSuite) TestMarkDrinksServedHandlerReturnsOkIfNoError
 	assert.Equal(suite.T(), "2qPTBJCN6ib7iJ6WaIVvoSmySSV", capturedCommand.ID.String())
 }
 
-func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfNotPost() {
+func (suite *WriteServiceTestSuite) TestCloseTabHandlerReturnsErrorIfNotPost() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodGet, "", nil)
@@ -400,7 +400,7 @@ func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfNotPost() {
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Method Not Allowed\"}", string(bytes))
 }
-func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfEmptyBody() {
+func (suite *WriteServiceTestSuite) TestCloseTabHandlerReturnsErrorIfEmptyBody() {
 	// Given
 	rr := httptest.NewRecorder()
 	request, err := http.NewRequest(http.MethodPost, "", nil)
@@ -416,7 +416,7 @@ func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfEmptyBody() 
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Empty body\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfInvalidJson() {
+func (suite *WriteServiceTestSuite) TestCloseTabHandlerReturnsErrorIfInvalidJson() {
 
 	// Given
 	rr := httptest.NewRecorder()
@@ -433,7 +433,7 @@ func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfInvalidJson(
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Invalid JSON request\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfCannotParseId() {
+func (suite *WriteServiceTestSuite) TestCloseTabHandlerReturnsErrorIfCannotParseId() {
 
 	// Given
 	closeTabRequest := model.CloseTabRequest{
@@ -456,7 +456,7 @@ func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfCannotParseI
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"could not parse id\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfDispatcherReturnsError() {
+func (suite *WriteServiceTestSuite) TestCloseTabHandlerReturnsErrorIfDispatcherReturnsError() {
 
 	// Given
 	closeTabRequest := model.CloseTabRequest{
@@ -481,7 +481,7 @@ func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsErrorIfDispatcherRe
 	assert.Equal(suite.T(), "{\"ok\":false,\"error\":\"Error processing closeTab request: error dispatching command\"}", string(bytes))
 }
 
-func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsOkIfNoError() {
+func (suite *WriteServiceTestSuite) TestCloseTabHandlerReturnsOkIfNoError() {
 
 	// Given
 	closeTabRequest := model.CloseTabRequest{
@@ -511,13 +511,13 @@ func (suite *WriteServieTestSuite) TestCloseTabHandlerReturnsOkIfNoError() {
 	assert.Equal(suite.T(), "2qPTBJCN6ib7iJ6WaIVvoSmySSV", capturedCommand.ID.String())
 }
 
-func (suite *WriteServieTestSuite) SetupTest() {
+func (suite *WriteServiceTestSuite) SetupTest() {
 	suite.ctx = context.Background()
 	suite.menuItemRepository = shared_mocks.NewMenuItemRepository(suite.T())
 	suite.commandDispatcher = commands_mocks.NewCommandDispatcher(suite.T())
 	suite.writeService = CreateWriteService(1234, suite.menuItemRepository, suite.commandDispatcher)
 }
 
-func TestWriteServieTestSuite(t *testing.T) {
-	suite.Run(t, new(WriteServieTestSuite))
+func TestWriteServiceTestSuite(t *testing.T) {
+	suite.Run(t, new(WriteServiceTestSuite))
 }

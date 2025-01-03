@@ -55,16 +55,16 @@ func (suite *QueriesTestSuite) TestAnOpenTab() {
 	invoice, err := suite.openTabQueries.InvoiceForTable(1)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), false, invoice.HasUnservedItems)
-	assert.Equal(suite.T(), tabId, invoice.TabID)
+	assert.Equal(suite.T(), tabId.String(), invoice.TabID)
 	assert.Equal(suite.T(), 1, invoice.TableNumber)
 	assert.Equal(suite.T(), 0.0, invoice.Total)
 	assert.Empty(suite.T(), invoice.Items)
 
 	tabForTable, err := suite.openTabQueries.TabForTable(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), tabForTable.TabID, tabId)
-	assert.Equal(suite.T(), tabForTable.TableNumber, 1)
-	assert.Equal(suite.T(), tabForTable.ToServe, []queries.TabItem{})
+	assert.Equal(suite.T(), tabId.String(), tabForTable.TabID)
+	assert.Equal(suite.T(), 1, tabForTable.TableNumber)
+	assert.Equal(suite.T(), []queries.TabItem{}, tabForTable.ToServe)
 
 	tabIdForTable1, err := suite.openTabQueries.TabIdForTable(1)
 	assert.NoError(suite.T(), err)
@@ -101,14 +101,14 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 	invoice, err := suite.openTabQueries.InvoiceForTable(1)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), true, invoice.HasUnservedItems)
-	assert.Equal(suite.T(), tabId, invoice.TabID)
+	assert.Equal(suite.T(), tabId.String(), invoice.TabID)
 	assert.Equal(suite.T(), 1, invoice.TableNumber)
 	assert.Equal(suite.T(), 0.0, invoice.Total)
 	assert.Empty(suite.T(), invoice.Items)
 
 	tabForTable, err := suite.openTabQueries.TabForTable(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), tabId, tabForTable.TabID)
+	assert.Equal(suite.T(), tabId.String(), tabForTable.TabID)
 	assert.Equal(suite.T(), 1, tabForTable.TableNumber)
 	assert.Equal(suite.T(), []queries.TabItem{{MenuNumber: 10, Description: "Water", Price: 1}}, tabForTable.ToServe)
 
@@ -165,14 +165,14 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 	invoice, err := suite.openTabQueries.InvoiceForTable(1)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), true, invoice.HasUnservedItems)
-	assert.Equal(suite.T(), tabId, invoice.TabID)
+	assert.Equal(suite.T(), tabId.String(), invoice.TabID)
 	assert.Equal(suite.T(), 1, invoice.TableNumber)
 	assert.Equal(suite.T(), 1.0, invoice.Total)
 	assert.Equal(suite.T(), []queries.TabItem{{MenuNumber: 10, Description: "Water", Price: 1}}, invoice.Items)
 
 	tabForTable, err := suite.openTabQueries.TabForTable(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), tabId, tabForTable.TabID)
+	assert.Equal(suite.T(), tabId.String(), tabForTable.TabID)
 	assert.Equal(suite.T(), 1, tabForTable.TableNumber)
 	assert.Equal(suite.T(), []queries.TabItem{{MenuNumber: 11, Description: "Beer", Price: 2}}, tabForTable.ToServe)
 
@@ -230,7 +230,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 	invoice, err := suite.openTabQueries.InvoiceForTable(1)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), false, invoice.HasUnservedItems)
-	assert.Equal(suite.T(), tabId, invoice.TabID)
+	assert.Equal(suite.T(), tabId.String(), invoice.TabID)
 	assert.Equal(suite.T(), 1, invoice.TableNumber)
 	assert.Equal(suite.T(), 3.0, invoice.Total)
 	assert.Equal(suite.T(), []queries.TabItem{{MenuNumber: 10, Description: "Water", Price: 1}, {
@@ -241,7 +241,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 
 	tabForTable, err := suite.openTabQueries.TabForTable(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), tabId, tabForTable.TabID)
+	assert.Equal(suite.T(), tabId.String(), tabForTable.TabID)
 	assert.Equal(suite.T(), 1, tabForTable.TableNumber)
 	assert.Empty(suite.T(), tabForTable.ToServe)
 
