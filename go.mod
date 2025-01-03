@@ -68,7 +68,7 @@ require (
 	github.com/nats-io/nats.go v1.38.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/testcontainers/testcontainers-go v0.34.0 // indirect
+	github.com/testcontainers/testcontainers-go v0.34.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.34.0
 	github.com/thoas/go-funk v0.9.3
 	gopkg.in/yaml.v3 v3.0.1 // indirect

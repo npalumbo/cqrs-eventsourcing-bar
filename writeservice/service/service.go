@@ -1,9 +1,10 @@
-package main
+package service
 
 import (
 	"encoding/json"
 	"fmt"
 	"golangsevillabar/commands"
+	"golangsevillabar/shared"
 	"golangsevillabar/writeservice/model"
 	"io"
 	"log/slog"
@@ -12,25 +13,48 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-func setupServer() error {
-	http.HandleFunc("/openTab", openTabHandler)
-	http.HandleFunc("/placeOrder", placeOrderHandler)
-	http.HandleFunc("/markDrinksServed", markDrinksServedHandler)
-	http.HandleFunc("/closeTab", closeTabHandler)
-
-	slog.Info("Write server listening on :8080")
-
-	return http.ListenAndServe(":8080", nil)
+type WriteService struct {
+	httpServer         *http.Server
+	serveMux           *http.ServeMux
+	menuItemRepository shared.MenuItemRepository
+	commandDispatcher  commands.CommandDispatcher
 }
 
-func openTabHandler(w http.ResponseWriter, r *http.Request) {
+func CreateWriteService(port int, menuItemRepository shared.MenuItemRepository, commandDispatcher commands.CommandDispatcher) *WriteService {
+	srv := &WriteService{
+		menuItemRepository: menuItemRepository,
+		commandDispatcher:  commandDispatcher,
+	}
+
+	srv.serveMux = http.NewServeMux()
+	srv.serveMux.HandleFunc("/openTab", srv.openTabHandler)
+	srv.serveMux.HandleFunc("/placeOrder", srv.placeOrderHandler)
+	srv.serveMux.HandleFunc("/markDrinksServed", srv.markDrinksServedHandler)
+	srv.serveMux.HandleFunc("/closeTab", srv.closeTabHandler)
+
+	srv.httpServer = &http.Server{
+		Addr: fmt.Sprintf(":%d", port),
+	}
+
+	srv.httpServer.Handler = srv.serveMux
+
+	return srv
+}
+
+func (ws *WriteService) Start() error {
+	slog.Info(fmt.Sprintf("Write server listening on%s", ws.httpServer.Addr))
+
+	return ws.httpServer.ListenAndServe()
+}
+
+func (ws *WriteService) openTabHandler(w http.ResponseWriter, r *http.Request) {
 	var request model.OpenTabRequest
 	shouldReturn := readRequest(w, r, &request)
 	if shouldReturn {
 		return
 	}
 
-	err := dispatcher.DispatchCommand(r.Context(), commands.OpenTab{
+	err := ws.commandDispatcher.DispatchCommand(r.Context(), commands.OpenTab{
 		BaseCommand: commands.BaseCommand{ID: ksuid.New()},
 		TableNumber: request.TableNumber,
 		Waiter:      request.Waiter,
@@ -44,7 +68,7 @@ func openTabHandler(w http.ResponseWriter, r *http.Request) {
 	returnJsonOk(w)
 }
 
-func placeOrderHandler(w http.ResponseWriter, r *http.Request) {
+func (ws *WriteService) placeOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var request model.PlaceOrderRequest
 	shouldReturn := readRequest(w, r, &request)
 	if shouldReturn {
@@ -58,14 +82,14 @@ func placeOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderedItems, err := menuItemRepository.ReadItems(r.Context(), request.MenuItems)
+	orderedItems, err := ws.menuItemRepository.ReadItems(r.Context(), request.MenuItems)
 
 	if err != nil {
 		returnJsonError(w, "could not read items from DB", http.StatusBadRequest)
 		return
 	}
 
-	err = dispatcher.DispatchCommand(r.Context(), commands.PlaceOrder{
+	err = ws.commandDispatcher.DispatchCommand(r.Context(), commands.PlaceOrder{
 		BaseCommand: commands.BaseCommand{ID: id},
 		Items:       orderedItems,
 	})
@@ -78,7 +102,7 @@ func placeOrderHandler(w http.ResponseWriter, r *http.Request) {
 	returnJsonOk(w)
 }
 
-func markDrinksServedHandler(w http.ResponseWriter, r *http.Request) {
+func (ws *WriteService) markDrinksServedHandler(w http.ResponseWriter, r *http.Request) {
 	var request model.MarkDrinksServedRequest
 	shouldReturn := readRequest(w, r, &request)
 	if shouldReturn {
@@ -92,7 +116,7 @@ func markDrinksServedHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dispatcher.DispatchCommand(r.Context(), commands.MarkDrinksServed{
+	err = ws.commandDispatcher.DispatchCommand(r.Context(), commands.MarkDrinksServed{
 		BaseCommand: commands.BaseCommand{ID: id},
 		MenuNumbers: request.MenuNumbers,
 	})
@@ -105,7 +129,7 @@ func markDrinksServedHandler(w http.ResponseWriter, r *http.Request) {
 	returnJsonOk(w)
 }
 
-func closeTabHandler(w http.ResponseWriter, r *http.Request) {
+func (ws *WriteService) closeTabHandler(w http.ResponseWriter, r *http.Request) {
 	var request model.CloseTabRequest
 	shouldReturn := readRequest(w, r, &request)
 	if shouldReturn {
@@ -119,7 +143,7 @@ func closeTabHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dispatcher.DispatchCommand(r.Context(), commands.CloseTab{
+	err = ws.commandDispatcher.DispatchCommand(r.Context(), commands.CloseTab{
 		BaseCommand: commands.BaseCommand{ID: id},
 		AmountPaid:  request.AmountPaid,
 	})
@@ -136,6 +160,13 @@ func readRequest[T any](w http.ResponseWriter, r *http.Request, data *T) (errore
 	if r.Method != http.MethodPost {
 		returnJsonError(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		errored = true
+		return
+	}
+
+	if r.Body == nil {
+		returnJsonError(w, "Empty body", http.StatusBadRequest)
+		errored = true
+		return
 	}
 
 	body, err := io.ReadAll(r.Body)
@@ -143,12 +174,14 @@ func readRequest[T any](w http.ResponseWriter, r *http.Request, data *T) (errore
 	if err != nil {
 		returnJsonError(w, "Error reading request body", http.StatusBadRequest)
 		errored = true
+		return
 	}
 
 	err = json.Unmarshal(body, data)
 	if err != nil {
 		returnJsonError(w, "Invalid JSON request", http.StatusBadRequest)
 		errored = true
+		return
 	}
 	return
 }

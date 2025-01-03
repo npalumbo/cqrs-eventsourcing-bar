@@ -2,6 +2,7 @@ package shared
 
 import "context"
 
+//go:generate mockery --name MenuItemRepository
 type MenuItemRepository interface {
 	ReadItems(ctx context.Context, menuItems []int) ([]OrderedItem, error)
 }

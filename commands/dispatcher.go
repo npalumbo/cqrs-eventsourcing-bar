@@ -7,6 +7,11 @@ import (
 	"reflect"
 )
 
+//go:generate mockery --name CommandDispatcher
+type CommandDispatcher interface {
+	DispatchCommand(ctx context.Context, command Command) error
+}
+
 type Dispatcher struct {
 	eventStore       events.EventStore
 	eventEmitter     events.EventEmitter

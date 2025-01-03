@@ -7,6 +7,7 @@ import (
 	"golangsevillabar/events"
 	"golangsevillabar/messaging"
 	"golangsevillabar/shared"
+	"golangsevillabar/writeservice/service"
 )
 
 var dispatcher *commands.Dispatcher
@@ -27,7 +28,9 @@ func main() {
 
 	dispatcher = commands.CreateCommandDispatcher(eventStore, eventEmitter, commands.TabAggregateFactory{})
 
-	err = setupServer()
+	writeService := service.CreateWriteService(8080, menuItemRepository, dispatcher)
+
+	err = writeService.Start()
 
 	panicIfErrors(err)
 }
