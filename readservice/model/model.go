@@ -2,10 +2,14 @@ package model
 
 import "golangsevillabar/queries"
 
+type QueryResponse[T any] struct {
+	OK    bool   `json:"ok"`
+	Error string `json:"error"`
+	Data  T      `json:"data"`
+}
+
 type ActiveTableNumbersResponse struct {
-	ActiveTables []int  `json:"active_tables"`
-	OK           bool   `json:"ok"`
-	Error        string `json:"error"`
+	ActiveTables []int `json:"active_tables"`
 }
 
 type InvoiceForTableRequest struct {
@@ -14,8 +18,6 @@ type InvoiceForTableRequest struct {
 
 type InvoiceForTableResponse struct {
 	TabInvoice queries.TabInvoice `json:"tab_invoice"`
-	OK         bool               `json:"ok"`
-	Error      string             `json:"error"`
 }
 
 type TabIdForTableRequest struct {
@@ -24,8 +26,6 @@ type TabIdForTableRequest struct {
 
 type TabIdForTableResponse struct {
 	TabId string `json:"tab_id"`
-	OK    bool   `json:"ok"`
-	Error string `json:"error"`
 }
 
 type TabForTableRequest struct {
@@ -33,9 +33,7 @@ type TabForTableRequest struct {
 }
 
 type TabForTableResponse struct {
-	TabId string `json:"tab_id"`
-	OK    bool   `json:"ok"`
-	Error string `json:"error"`
+	TabStatus queries.TabStatus `json:"tab_status"`
 }
 
 type TodoListForWaiterRequest struct {
@@ -43,7 +41,5 @@ type TodoListForWaiterRequest struct {
 }
 
 type TodoListForWaiterResponse struct {
-	TabItems []queries.TabItem `json:"tab_items"`
-	OK       bool              `json:"ok"`
-	Error    string            `json:"error"`
+	TabItemsForTable map[int][]queries.TabItem `json:"tab_items_for_table"`
 }

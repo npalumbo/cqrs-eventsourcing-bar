@@ -11,6 +11,7 @@ import (
 	"github.com/thoas/go-funk"
 )
 
+//go:generate mockery --name OpenTabQueries
 type OpenTabQueries interface {
 	ActiveTableNumbers() []int
 	InvoiceForTable(table int) (TabInvoice, error)
