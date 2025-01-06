@@ -14,6 +14,17 @@ type postgresEventStore struct {
 	conn *pgx.Conn
 }
 
+func (es *postgresEventStore) LoadAllEvents(ctx context.Context) ([]Event, error) {
+	rows, err := es.conn.Query(ctx, "SELECT event_type, payload FROM events ORDER BY aggregate_id, sequence_number ASC")
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return processEvents(rows)
+}
+
 func (es *postgresEventStore) LoadEvents(ctx context.Context, aggregateID ksuid.KSUID) ([]Event, error) {
 	rows, err := es.conn.Query(ctx, "SELECT event_type, payload FROM events WHERE aggregate_id = $1 ORDER BY sequence_number ASC", aggregateID.String())
 
@@ -22,6 +33,10 @@ func (es *postgresEventStore) LoadEvents(ctx context.Context, aggregateID ksuid.
 	}
 	defer rows.Close()
 
+	return processEvents(rows)
+}
+
+func processEvents(rows pgx.Rows) ([]Event, error) {
 	var events []Event
 	for rows.Next() {
 		var event Event

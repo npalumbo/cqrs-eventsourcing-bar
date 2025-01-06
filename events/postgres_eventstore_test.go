@@ -72,6 +72,35 @@ func (suite *PostgresEventStoreTestSuite) TestLoadEvents() {
 
 }
 
+func (suite *PostgresEventStoreTestSuite) TestLoadAllEvents() {
+	t := suite.T()
+	// Given
+	aggregateId1, _ := ksuid.Parse("1qPTBJCN6ib7iJ6WaIVvoSmySSV")
+	aggregateId2, _ := ksuid.Parse("2qPTBJCN6ib7iJ6WaIVvoSmySSV")
+	// When
+	loadedEvents, err := suite.eventStorePostgres.LoadAllEvents(context.TODO())
+	// Then
+	assert.NoError(t, err)
+	assert.NotEmpty(t, loadedEvents)
+	assert.Len(t, loadedEvents, 3)
+	assert.Equal(t, aggregateId1, loadedEvents[0].GetID())
+	tabOpened, ok := loadedEvents[0].(events.TabOpened)
+	assert.True(t, ok)
+	assert.Equal(t, events.TabOpened{
+		BaseEvent:   events.BaseEvent{ID: aggregateId1},
+		TableNumber: 2,
+		Waiter:      "w2",
+	}, tabOpened)
+	tabOpened2, ok := loadedEvents[1].(events.TabOpened)
+	assert.True(t, ok)
+	assert.Equal(t, events.TabOpened{
+		BaseEvent:   events.BaseEvent{ID: aggregateId2},
+		TableNumber: 1,
+		Waiter:      "w1",
+	}, tabOpened2)
+
+}
+
 func (suite *PostgresEventStoreTestSuite) TestSaveEventsErrorsIfWeAttemptToOverrideExistingEvent() {
 	// Given
 	aggregateId, _ := ksuid.Parse("2qPTBJCN6ib7iJ6WaIVvoSmySSV")

@@ -16,6 +16,36 @@ type EventStore struct {
 	mock.Mock
 }
 
+// LoadAllEvents provides a mock function with given fields: ctx
+func (_m *EventStore) LoadAllEvents(ctx context.Context) ([]events.Event, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LoadAllEvents")
+	}
+
+	var r0 []events.Event
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]events.Event, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []events.Event); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]events.Event)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // LoadEvents provides a mock function with given fields: ctx, aggregateID
 func (_m *EventStore) LoadEvents(ctx context.Context, aggregateID ksuid.KSUID) ([]events.Event, error) {
 	ret := _m.Called(ctx, aggregateID)

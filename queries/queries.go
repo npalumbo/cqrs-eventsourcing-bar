@@ -89,6 +89,7 @@ func (o *openTabs) ActiveTableNumbers() []int {
 	for _, todo := range o.todoByTab {
 		tableNumbers = append(tableNumbers, todo.TableNumber)
 	}
+	slices.Sort(tableNumbers)
 	return tableNumbers
 }
 
