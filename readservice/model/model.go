@@ -12,32 +12,16 @@ type ActiveTableNumbersResponse struct {
 	ActiveTables []int `json:"active_tables"`
 }
 
-type InvoiceForTableRequest struct {
-	TableNumber int `json:"table_number"`
-}
-
-type InvoiceForTableResponse struct {
-	TabInvoice queries.TabInvoice `json:"tab_invoice"`
-}
-
-type TabIdForTableRequest struct {
-	TableNumber int `json:"table_number"`
-}
-
 type TabIdForTableResponse struct {
 	TabId string `json:"tab_id"`
-}
-
-type TabForTableRequest struct {
-	TableNumber int `json:"table_number"`
 }
 
 type TabForTableResponse struct {
 	TabStatus queries.TabStatus `json:"tab_status"`
 }
 
-type TodoListForWaiterRequest struct {
-	Waiter string `json:"waiter"`
+type InvoiceForTableResponse struct {
+	TabInvoice queries.TabInvoice `json:"tab_invoice"`
 }
 
 type TodoListForWaiterResponse struct {
