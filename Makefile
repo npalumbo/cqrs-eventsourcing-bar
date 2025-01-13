@@ -7,6 +7,7 @@ help:  ## Display this help.
 tools: ## Installs required binaries locally
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/vektra/mockery/v2@v2.49.0
+	go install fyne.io/fyne/v2/cmd/fyne@latest
 
 ##@ Building
 build-multi-arch: ## Builds golang-sevilla-bar go binary for linux and darwin. Outputs to `bin/golang-sevilla-bar-$GOOS-$GOARCH`.
@@ -18,7 +19,7 @@ build-multi-arch: ## Builds golang-sevilla-bar go binary for linux and darwin. O
 
 build: check## Builds golang-sevilla-bar go binary for local arch. Outputs to `bin/golang-sevilla-bar`
 	@echo "== build"
-	CGO_ENABLED=0 go build -o bin/ ./...
+	CGO_ENABLED=1 go build -o bin/ ./...
 
 ##@ Cleanup
 clean: ## Deletes binaries from the bin folder
