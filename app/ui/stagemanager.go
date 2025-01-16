@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 )
 
 type StageManager struct {
@@ -14,7 +15,7 @@ type StageManager struct {
 //go:generate mockgen -destination=../mocks/ui/mock_stagemanager.go -source=./stagemanager.go
 
 type StagerController interface {
-	TakeOver(name string) error
+	TakeOver(name string, param interface{}) error
 	RegisterStager(stager Stager)
 	GetContainer() *fyne.Container
 }
@@ -24,13 +25,13 @@ type DefaultStager struct {
 
 type Stager interface {
 	GetPaintedContainer() *fyne.Container
-	ExecuteOnTakeOver()
+	ExecuteOnTakeOver(param interface{})
 	GetStageName() string
 }
 
-func CreateStageManager(currentViewContainer *fyne.Container) StageManager {
+func CreateStageManager() StageManager {
 	return StageManager{
-		currentViewContainer: currentViewContainer,
+		currentViewContainer: container.NewStack(),
 		stagerMap:            make(map[string]Stager),
 	}
 }
@@ -39,7 +40,7 @@ func (s StageManager) RegisterStager(stager Stager) {
 	s.stagerMap[stager.GetStageName()] = stager
 }
 
-func (s StageManager) TakeOver(name string) error {
+func (s StageManager) TakeOver(name string, param interface{}) error {
 	stager, ok := s.stagerMap[name]
 
 	if !ok {
@@ -50,7 +51,7 @@ func (s StageManager) TakeOver(name string) error {
 	container := stager.GetPaintedContainer()
 	container.Refresh()
 	s.currentViewContainer.Add(container)
-	stager.ExecuteOnTakeOver()
+	stager.ExecuteOnTakeOver(param)
 	s.currentViewContainer.Refresh()
 
 	return nil

@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 )
 
 type tableControl struct {
@@ -16,19 +17,19 @@ type tableControl struct {
 	waiters      []string
 }
 
-func CreateTableControl(totalTables int, client *apiclient.Client, mainContainer *fyne.Container) *tableControl {
+func CreateTableControl(totalTables int, client *apiclient.Client, waiters []string, stageManager *StageManager, mainContainer *fyne.Container) *tableControl {
 
 	tableButtons := []*tableButton{}
 	grid := container.New(layout.NewGridLayout(3))
 	for i := 0; i < totalTables; i++ {
-		tableButton := newTableButton(i+1, []string{"w1", "w2"})
+		tableButton := newTableButton(i+1, waiters, stageManager)
 		tableButtons = append(tableButtons, tableButton)
 		grid.Add(tableButton)
 	}
-	mainContainer.Add(grid)
+	mainContainer.Add(widget.NewCard("Table Control", "", grid))
 
 	return &tableControl{Container: grid, tableButtons: tableButtons, client: client,
-		waiters: []string{"w1", "w2"}}
+		waiters: waiters}
 }
 
 func (tc *tableControl) UpdateActiveTables() {
