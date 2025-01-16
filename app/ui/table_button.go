@@ -13,16 +13,19 @@ type tableButton struct {
 	menuActive   *fyne.Menu
 	menuInactive *fyne.Menu
 	Active       bool
+	waiters      []string
 }
 
-func newTableButton(ID int) *tableButton {
-	tableButton := &tableButton{ID: ID}
+func newTableButton(ID int, waiters []string) *tableButton {
+	tableButton := &tableButton{ID: ID, waiters: waiters}
 	tableButton.ExtendBaseWidget(tableButton)
 
 	tableButton.menuActive = fyne.NewMenu("Active Table",
-		fyne.NewMenuItem("Close Table", func() { fmt.Println("Clicked Close") }))
+		fyne.NewMenuItem("Close Table", func() { fmt.Println("Clicked Close") }),
+	)
 	tableButton.menuInactive = fyne.NewMenu("Active Table",
-		fyne.NewMenuItem("Open Table", func() { fmt.Println("Clicked Open") }))
+		fyne.NewMenuItem("Open Tab", func() { fmt.Println("Clicked Open") }),
+	)
 	tableButton.Text = fmt.Sprintf("Table %d", ID)
 	return tableButton
 

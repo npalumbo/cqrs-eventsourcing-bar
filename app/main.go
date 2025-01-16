@@ -3,7 +3,6 @@ package main
 import (
 	"golangsevillabar/app/apiclient"
 	"golangsevillabar/app/ui"
-	"log/slog"
 	"net/http"
 
 	"fyne.io/fyne/v2"
@@ -16,21 +15,19 @@ func main() {
 
 	apiClient := apiclient.NewClient(&http.Client{}, "http://localhost:8081")
 
-	active, err := apiClient.GetActiveTables()
-	if err != nil {
-		slog.Error("error from api", slog.Any("error", err))
-	}
+	// tabIdForTableOne, err := apiClient.GetTabIdForTable(1)
+	// if err != nil {
+	// 	slog.Error("error from api", slog.Any("error", err))
+	// }
+	// slog.Info("TabId for table 1", slog.Any("ID", tabIdForTableOne.Data))
 
-	tabIdForTableOne, err := apiClient.GetTabIdForTable(1)
-	if err != nil {
-		slog.Error("error from api", slog.Any("error", err))
-	}
-	slog.Info("TabId for table 1", slog.Any("ID", tabIdForTableOne.Data))
+	mainContainer := ui.CreateMainContent(6, apiClient, w)
 
-	buttonControl := ui.CreateTableControl(6)
+	// tableControl := ui.CreateTableControl(6, apiClient, w)
 
-	w.SetContent(buttonControl.Container)
-	buttonControl.UpdateActiveTables(active.Data.ActiveTables)
+	// tableControl.UpdateActiveTables()
+
+	w.SetContent(mainContainer.MakeUI())
 
 	w.Resize(fyne.NewSize(600, 600))
 	w.ShowAndRun()

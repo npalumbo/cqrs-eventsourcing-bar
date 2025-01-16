@@ -8,16 +8,16 @@ import (
 	"net/http"
 )
 
-type client struct {
+type Client struct {
 	httpClient *http.Client
 	url        string
 }
 
-func NewClient(httpClient *http.Client, url string) *client {
-	return &client{httpClient: httpClient, url: url}
+func NewClient(httpClient *http.Client, url string) *Client {
+	return &Client{httpClient: httpClient, url: url}
 }
 
-func (c *client) GetActiveTables() (model.QueryResponse[model.ActiveTableNumbersResponse], error) {
+func (c *Client) GetActiveTables() (model.QueryResponse[model.ActiveTableNumbersResponse], error) {
 	response := model.QueryResponse[model.ActiveTableNumbersResponse]{}
 	req, err := http.NewRequest("GET", c.url+"/activeTableNumbers", nil)
 	if err != nil {
@@ -27,7 +27,7 @@ func (c *client) GetActiveTables() (model.QueryResponse[model.ActiveTableNumbers
 	return processResponse(c, req, response)
 }
 
-func (c *client) GetTabIdForTable(tableNumber int) (model.QueryResponse[model.TabIdForTableResponse], error) {
+func (c *Client) GetTabIdForTable(tableNumber int) (model.QueryResponse[model.TabIdForTableResponse], error) {
 	response := model.QueryResponse[model.TabIdForTableResponse]{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/tabIdForTable?table_number=%d", c.url, tableNumber), nil)
 	if err != nil {
@@ -37,7 +37,7 @@ func (c *client) GetTabIdForTable(tableNumber int) (model.QueryResponse[model.Ta
 	return processResponse(c, req, response)
 }
 
-func processResponse[T any](c *client, req *http.Request, response T) (T, error) {
+func processResponse[T any](c *Client, req *http.Request, response T) (T, error) {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		fmt.Println("Error making request:", err)
