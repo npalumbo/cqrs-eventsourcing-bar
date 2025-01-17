@@ -17,7 +17,8 @@ func main() {
 	const amountOfTables = 6
 	waiters := []string{"w1", "w2"}
 
-	apiClient := apiclient.NewClient(&http.Client{}, "http://localhost:8081")
+	readApiClient := apiclient.NewReadClient(&http.Client{}, "http://localhost:8081")
+	writeApiClient := apiclient.NewWriteClient(&http.Client{}, "http://localhost:8080")
 
 	// tabIdForTableOne, err := apiClient.GetTabIdForTable(1)
 	// if err != nil {
@@ -27,8 +28,8 @@ func main() {
 
 	stageManager := ui.CreateStageManager()
 
-	mainContainer := ui.CreateMainContent(amountOfTables, apiClient, &stageManager, waiters, w)
-	openTabStage := ui.CreateOpenTabScreen(waiters, &stageManager)
+	mainContainer := ui.CreateMainContent(amountOfTables, readApiClient, &stageManager, waiters, w)
+	openTabStage := ui.CreateOpenTabScreen(waiters, writeApiClient, &stageManager)
 
 	stageManager.RegisterStager(mainContainer)
 	stageManager.RegisterStager(openTabStage)

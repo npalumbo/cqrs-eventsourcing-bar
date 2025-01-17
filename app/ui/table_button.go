@@ -28,7 +28,9 @@ func newTableButton(ID int, waiters []string, stageManager *StageManager) *table
 	tableButton.menuInactive = fyne.NewMenu("Active Table",
 		fyne.NewMenuItem("Open Tab", func() {
 			err := stageManager.TakeOver(OpenTabStage, ID)
-			slog.Error("error launching open tab screen", slog.Any("error", err))
+			if err != nil {
+				slog.Error("error launching open tab screen", slog.Any("error", err))
+			}
 		}),
 	)
 	tableButton.Text = fmt.Sprintf("Table %d", ID)

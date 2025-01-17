@@ -13,11 +13,11 @@ import (
 type tableControl struct {
 	Container    *fyne.Container
 	tableButtons []*tableButton
-	client       *apiclient.Client
+	client       *apiclient.ReadClient
 	waiters      []string
 }
 
-func CreateTableControl(totalTables int, client *apiclient.Client, waiters []string, stageManager *StageManager, mainContainer *fyne.Container) *tableControl {
+func CreateTableControl(totalTables int, client *apiclient.ReadClient, waiters []string, stageManager *StageManager, mainContainer *fyne.Container) *tableControl {
 
 	tableButtons := []*tableButton{}
 	grid := container.New(layout.NewGridLayout(3))
