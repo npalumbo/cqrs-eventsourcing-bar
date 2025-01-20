@@ -37,6 +37,16 @@ func (c *ReadClient) GetTabIdForTable(tableNumber int) (model.QueryResponse[mode
 	return processResponse(c, req, response)
 }
 
+func (c *ReadClient) GetTabForTable(tableNumber int) (model.QueryResponse[model.TabForTableResponse], error) {
+	response := model.QueryResponse[model.TabForTableResponse]{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/tabForTable?table_number=%d", c.url, tableNumber), nil)
+	if err != nil {
+		return response, err
+	}
+
+	return processResponse(c, req, response)
+}
+
 func processResponse[T any](c *ReadClient, req *http.Request, response T) (T, error) {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

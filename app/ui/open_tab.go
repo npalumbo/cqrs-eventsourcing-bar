@@ -74,7 +74,7 @@ func CreateOpenTabScreen(waiters []string, writeApiClient *apiclient.WriteClient
 	}
 
 	container := container.NewVBox()
-	container.Add(widget.NewCard("Open a Tab", "Table 5", form))
+	container.Add(widget.NewCard("Open a Tab", "", form))
 	// container.Add(form)
 	return &openTabScreen{
 		form:           form,

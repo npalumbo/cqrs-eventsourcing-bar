@@ -20,23 +20,15 @@ func main() {
 	readApiClient := apiclient.NewReadClient(&http.Client{}, "http://localhost:8081")
 	writeApiClient := apiclient.NewWriteClient(&http.Client{}, "http://localhost:8080")
 
-	// tabIdForTableOne, err := apiClient.GetTabIdForTable(1)
-	// if err != nil {
-	// 	slog.Error("error from api", slog.Any("error", err))
-	// }
-	// slog.Info("TabId for table 1", slog.Any("ID", tabIdForTableOne.Data))
-
 	stageManager := ui.CreateStageManager()
 
 	mainContainer := ui.CreateMainContent(amountOfTables, readApiClient, &stageManager, waiters, w)
 	openTabStage := ui.CreateOpenTabScreen(waiters, writeApiClient, &stageManager)
+	invoiceStage := ui.CreateInvoiceScreen(writeApiClient, &stageManager)
 
 	stageManager.RegisterStager(mainContainer)
 	stageManager.RegisterStager(openTabStage)
-
-	// tableControl := ui.CreateTableControl(6, apiClient, w)
-
-	// tableControl.UpdateActiveTables()
+	stageManager.RegisterStager(invoiceStage)
 
 	w.SetContent(stageManager.GetContainer())
 
@@ -44,11 +36,6 @@ func main() {
 	if err != nil {
 		slog.Error("error opening screen", slog.Any("error", err))
 	}
-
-	// err = stageManager.TakeOver(ui.OpenTabStage, 4)
-	// if err != nil {
-	// 	slog.Error("error opening screen", slog.Any("error", err))
-	// }
 
 	w.Resize(fyne.NewSize(600, 600))
 	w.ShowAndRun()

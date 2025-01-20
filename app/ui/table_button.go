@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"golangsevillabar/readservice/model"
 	"log/slog"
 
 	"fyne.io/fyne/v2"
@@ -16,6 +17,7 @@ type tableButton struct {
 	Active       bool
 	waiters      []string
 	stageManager *StageManager
+	tabStatus    *model.TabForTableResponse
 }
 
 func newTableButton(ID int, waiters []string, stageManager *StageManager) *tableButton {
@@ -23,7 +25,12 @@ func newTableButton(ID int, waiters []string, stageManager *StageManager) *table
 	tableButton.ExtendBaseWidget(tableButton)
 
 	tableButton.menuActive = fyne.NewMenu("Active Table",
-		fyne.NewMenuItem("Close Table", func() { fmt.Println("Clicked Close") }),
+		fyne.NewMenuItem("Invoice for Table", func() {
+			err := stageManager.TakeOver(InvoiceStage, ID)
+			if err != nil {
+				slog.Error("error launching invoice screen", slog.Any("error", err))
+			}
+		}),
 	)
 	tableButton.menuInactive = fyne.NewMenu("Active Table",
 		fyne.NewMenuItem("Open Tab", func() {
@@ -51,9 +58,10 @@ func (t *tableButton) Tapped(e *fyne.PointEvent) {
 func (t *tableButton) TappedSecondary(_ *fyne.PointEvent) {
 }
 
-func (t *tableButton) SetActive() {
+func (t *tableButton) SetActive(tabStatus *model.TabForTableResponse) {
 	t.Active = true
 	t.Importance = widget.HighImportance
+	t.tabStatus = tabStatus
 }
 
 func (t *tableButton) SetInactive() {
