@@ -152,7 +152,7 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 
 	assert.NoError(suite.T(), err)
 
-	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
+	err = suite.openTabQueries.HandleEvent(events.DrinksServed{
 		BaseEvent:   events.BaseEvent{ID: tabId},
 		MenuNumbers: []int{10},
 	})
@@ -213,12 +213,12 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 	})
 	assert.NoError(suite.T(), err)
 
-	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
+	err = suite.openTabQueries.HandleEvent(events.DrinksServed{
 		BaseEvent:   events.BaseEvent{ID: tabId},
 		MenuNumbers: []int{10},
 	})
 	assert.NoError(suite.T(), err)
-	err = suite.openTabQueries.HandleEvent(events.DrinkServed{
+	err = suite.openTabQueries.HandleEvent(events.DrinksServed{
 		BaseEvent:   events.BaseEvent{ID: tabId},
 		MenuNumbers: []int{11},
 	})

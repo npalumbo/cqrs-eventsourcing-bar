@@ -24,7 +24,7 @@ func main() {
 
 	mainContainer := ui.CreateMainContent(amountOfTables, readApiClient, &stageManager, waiters, w)
 	openTabStage := ui.CreateOpenTabScreen(waiters, writeApiClient, &stageManager)
-	invoiceStage := ui.CreateInvoiceScreen(readApiClient, writeApiClient, &stageManager)
+	invoiceStage := ui.CreateInvoiceScreen(readApiClient, writeApiClient, &stageManager, w)
 
 	stageManager.RegisterStager(mainContainer)
 	stageManager.RegisterStager(openTabStage)

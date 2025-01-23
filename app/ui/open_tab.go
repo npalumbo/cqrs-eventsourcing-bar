@@ -50,7 +50,7 @@ func CreateOpenTabScreen(waiters []string, writeApiClient *apiclient.WriteClient
 	form.OnCancel = func() {
 		err := stageManager.TakeOver(MainContentStage, nil)
 		if err != nil {
-			slog.Error("error launching open tab screen", slog.Any("error", err))
+			slog.Error("error launching main content screen", slog.Any("error", err))
 		}
 	}
 	form.SubmitText = "Open tab"
@@ -68,7 +68,7 @@ func CreateOpenTabScreen(waiters []string, writeApiClient *apiclient.WriteClient
 		}
 		err = stageManager.TakeOver(MainContentStage, nil)
 		if err != nil {
-			slog.Error("error launching open tab screen", slog.Any("error", err))
+			slog.Error("error launching main content screen", slog.Any("error", err))
 		}
 
 	}

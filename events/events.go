@@ -36,16 +36,16 @@ type DrinksOrdered struct {
 	Items []shared.OrderedItem `json:"items"`
 }
 
-type DrinkServed struct {
+type DrinksServed struct {
 	BaseEvent
-	MenuNumbers []int
+	MenuNumbers []int `json:"menu_numbers"`
 }
 
 type TabClosed struct {
 	BaseEvent
-	AmountPaid  float64
-	OrderAmount float64
-	Tip         float64
+	AmountPaid  float64 `json:"amount_paid"`
+	OrderAmount float64 `json:"order_amount"`
+	Tip         float64 `json:"tip"`
 }
 
 func UnmarshallPayload(typeName string, payload []byte) (Event, error) {
@@ -62,10 +62,10 @@ func UnmarshallPayload(typeName string, payload []byte) (Event, error) {
 			return DrinksOrdered{}, fmt.Errorf("could not create DrinksOrdered event from payload: %s", payload)
 		}
 		return event, nil
-	case "DrinkServed":
-		var event DrinkServed
+	case "DrinksServed":
+		var event DrinksServed
 		if err := json.Unmarshal(payload, &event); err != nil {
-			return DrinkServed{}, fmt.Errorf("could not create DrinkServed event from payload: %s", payload)
+			return DrinksServed{}, fmt.Errorf("could not create DrinkServed event from payload: %s", payload)
 		}
 		return event, nil
 	case "TabClosed":

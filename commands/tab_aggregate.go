@@ -43,7 +43,7 @@ func (t *tabAggregate) ApplyEvent(e events.Event) error {
 		return t.applyTabOpened(event)
 	case events.DrinksOrdered:
 		return t.applyDrinksOrdered(event)
-	case events.DrinkServed:
+	case events.DrinksServed:
 		return t.applyDrinksServed(event)
 	case events.TabClosed:
 		return t.applyTabClosed(event)
@@ -69,7 +69,7 @@ func (t *tabAggregate) handleCommandMarkDrinksServed(c MarkDrinksServed) ([]even
 		return nil, fmt.Errorf("cannot serve drinks that were not ordered: %v", menuItemsThatAreNotInOrderedItems)
 	}
 
-	return []events.Event{events.DrinkServed{BaseEvent: events.BaseEvent{ID: c.ID}, MenuNumbers: c.MenuNumbers}}, nil
+	return []events.Event{events.DrinksServed{BaseEvent: events.BaseEvent{ID: c.ID}, MenuNumbers: c.MenuNumbers}}, nil
 }
 
 func (t *tabAggregate) handleCommandCloseTab(c CloseTab) ([]events.Event, error) {
@@ -98,7 +98,7 @@ func (t *tabAggregate) applyDrinksOrdered(e events.DrinksOrdered) error {
 	return nil
 }
 
-func (t *tabAggregate) applyDrinksServed(e events.DrinkServed) error {
+func (t *tabAggregate) applyDrinksServed(e events.DrinksServed) error {
 	for _, menuNumber := range e.MenuNumbers {
 		found := funk.Find(t.outstandingDrinks, func(item shared.OrderedItem) bool { return item.MenuItem == menuNumber })
 		if found != nil {

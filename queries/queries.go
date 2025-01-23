@@ -48,7 +48,7 @@ func (o *openTabs) handleDrinksOrdered(e events.DrinksOrdered) error {
 	tab.ToServe = slices.AppendSeq(tab.ToServe, slices.Values(addToServe))
 	return nil
 }
-func (o *openTabs) handleDrinksServed(e events.DrinkServed) error {
+func (o *openTabs) handleDrinksServed(e events.DrinksServed) error {
 	defer o.lock.Unlock()
 	o.lock.Lock()
 	tab := o.todoByTab[e.ID]
@@ -177,7 +177,7 @@ func (o *openTabs) HandleEvent(e events.Event) error {
 		return o.handleTabOpened(event)
 	case events.DrinksOrdered:
 		return o.handleDrinksOrdered(event)
-	case events.DrinkServed:
+	case events.DrinksServed:
 		return o.handleDrinksServed(event)
 	case events.TabClosed:
 		return o.handleTabClosed(event)
