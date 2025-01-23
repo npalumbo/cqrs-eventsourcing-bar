@@ -1,10 +1,13 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"golangsevillabar/app/apiclient"
 	"golangsevillabar/queries"
+	"golangsevillabar/writeservice/model"
 	"log/slog"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -20,6 +23,7 @@ type invoiceScreen struct {
 	tableLabel            *widget.Label
 	totalLabel            *widget.Label
 	hasUnservedItemsLabel *widget.Label
+	tipLabel              *widget.Label
 	itemsList             *widget.List
 	container             *fyne.Container
 	readApiClient         *apiclient.ReadClient
@@ -28,11 +32,20 @@ type invoiceScreen struct {
 	tabItems              *[]queries.TabItem
 	closeTabButton        *widget.Button
 	closeTabForm          *dialog.FormDialog
+	payingWithEntry       *widget.Entry
+	currentTotal          float64
+	currentTip            float64
+	currentInvoiceData    *queries.TabInvoice
 }
 
 func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
+	i.currentTotal = -1
+	i.currentTip = 0
+	i.tipLabel.Text = ""
 	tableNumber := param.(int)
 	i.table = tableNumber
+	i.payingWithEntry.Text = ""
+	// i.payingWithEntry.SetValidationError(errors.New("must set paying with"))
 
 	response, err := i.readApiClient.GetInvoiceForTable(tableNumber)
 	if err != nil {
@@ -46,6 +59,7 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	}
 
 	invoice := response.Data
+	i.currentInvoiceData = &invoice.TabInvoice
 
 	*i.tabItems = nil
 	*i.tabItems = append(*i.tabItems, invoice.TabInvoice.Items...)
@@ -59,7 +73,17 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	i.container.Refresh()
 	i.tableLabel.Text = fmt.Sprintf("%d", i.table)
 	i.totalLabel.Text = fmt.Sprintf("%.2f", invoice.TabInvoice.Total)
+	i.currentTotal, err = strconv.ParseFloat(fmt.Sprintf("%.2f", invoice.TabInvoice.Total), 64)
+	if err != nil {
+		slog.Error("could not convert current total to float", slog.Any("error", err))
+	}
+
 	i.hasUnservedItemsLabel.Text = fmt.Sprintf("%t", invoice.TabInvoice.HasUnservedItems)
+	if invoice.TabInvoice.HasUnservedItems {
+		i.closeTabButton.Disable()
+	} else {
+		i.closeTabButton.Enable()
+	}
 }
 
 func (i *invoiceScreen) GetPaintedContainer() *fyne.Container {
@@ -72,6 +96,7 @@ func (i *invoiceScreen) GetStageName() string {
 
 func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *apiclient.WriteClient, stageManager *StageManager, w fyne.Window) *invoiceScreen {
 	tableLabel := widget.NewLabel("")
+	tipLabel := widget.NewLabel("")
 	tabItems := &[]queries.TabItem{}
 	itemsList := widget.NewList(func() int { return len(*tabItems) }, func() fyne.CanvasObject { return widget.NewLabel("") }, func(lii widget.ListItemID, co fyne.CanvasObject) {
 		tabItem := (*tabItems)[lii]
@@ -83,16 +108,66 @@ func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *ap
 	hasUnservedItemsLabel := widget.NewLabel("")
 	formItems := []*widget.FormItem{}
 	formItems = append(formItems, widget.NewFormItem("Total", totalLabel))
-	formItems = append(formItems, widget.NewFormItem("Tip", widget.NewEntry()))
-	closeTabForm := dialog.NewForm("Close Tab", "Close", "Cancel", formItems, func(b bool) {}, w)
+	payingWithEntry := widget.NewEntry()
+
+	payingWithFormItem := widget.NewFormItem("Paying with", payingWithEntry)
+	payingWithFormItem.HintText = "Amount"
+
+	formItems = append(formItems, payingWithFormItem)
+
+	invoiceScreen := &invoiceScreen{
+		table:                 0,
+		tableLabel:            tableLabel,
+		totalLabel:            totalLabel,
+		tipLabel:              tipLabel,
+		hasUnservedItemsLabel: hasUnservedItemsLabel,
+		readApiClient:         readApiClient,
+		writeApiClient:        writeApiClient,
+		stageManager:          stageManager,
+		itemsList:             itemsList,
+		tabItems:              tabItems,
+		payingWithEntry:       payingWithEntry,
+		currentTotal:          -1,
+		currentTip:            0,
+	}
+
+	closeTabForm := dialog.NewForm("Close Tab", "Close", "Cancel", formItems, func(hitCloseButton bool) {
+		slog.Info("Value of b", slog.Any("b", hitCloseButton))
+
+		if hitCloseButton {
+
+			amount, err := strconv.ParseFloat(invoiceScreen.payingWithEntry.Text, 64)
+			if err != nil {
+				slog.Error("error converting paying with before closing tab", slog.Any("error", err))
+			}
+			err = writeApiClient.ExecuteCommand(model.CloseTabRequest{
+				TabId:      invoiceScreen.currentInvoiceData.TabID,
+				AmountPaid: amount,
+			})
+			if err != nil {
+				slog.Error("error calling write api", slog.Any("error", err))
+			}
+			// If no error, we asume the close tab command worked and refresh the Tip field
+			invoiceScreen.currentTip = amount - invoiceScreen.currentTotal
+			invoiceScreen.tipLabel.Text = fmt.Sprintf("%.2f", invoiceScreen.currentTip)
+			invoiceScreen.closeTabButton.Disable()
+			invoiceScreen.tipLabel.Refresh()
+			invoiceScreen.containerInCard.Refresh()
+		}
+	}, w)
+
+	closeTabForm.Refresh()
+
 	closeTabButton := widget.NewButton("Close Tab", func() {
 		closeTabForm.Show()
 	})
+
 	containerInCard := container.NewGridWithColumns(2,
 		widget.NewLabel("Table"), tableLabel,
 		widget.NewLabel("Items"), itemsList,
 		widget.NewLabel("Total"), totalLabel,
 		widget.NewLabel("Has UnservedItems"), hasUnservedItemsLabel,
+		widget.NewLabel("Tip"), tipLabel,
 		widget.NewButton("Back", func() {
 			err := stageManager.TakeOver(MainContentStage, nil)
 			if err != nil {
@@ -104,19 +179,24 @@ func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *ap
 
 	container := container.NewStack(widget.NewCard("Invoice", "", containerInCard))
 
-	return &invoiceScreen{
-		table:                 0,
-		containerInCard:       containerInCard,
-		tableLabel:            tableLabel,
-		totalLabel:            totalLabel,
-		hasUnservedItemsLabel: hasUnservedItemsLabel,
-		container:             container,
-		readApiClient:         readApiClient,
-		writeApiClient:        writeApiClient,
-		stageManager:          stageManager,
-		itemsList:             itemsList,
-		tabItems:              tabItems,
-		closeTabButton:        closeTabButton,
-		closeTabForm:          closeTabForm,
+	payingWithEntry.SetValidationError(errors.New("must set paying with"))
+
+	payingWithEntry.Validator = func(s string) error {
+		amount, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return err
+		}
+		if amount < invoiceScreen.currentTotal {
+			return errors.New("need to pay with an amount higher than total")
+		}
+
+		return nil
 	}
+
+	invoiceScreen.containerInCard = containerInCard
+	invoiceScreen.container = container
+	invoiceScreen.closeTabButton = closeTabButton
+	invoiceScreen.closeTabForm = closeTabForm
+
+	return invoiceScreen
 }
