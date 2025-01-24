@@ -44,6 +44,7 @@ func CreateOpenTabScreen(waiters []string, writeApiClient *apiclient.WriteClient
 	form := &widget.Form{}
 	tableLabel := widget.NewLabel("")
 	waitersDropDown := widget.NewSelect(waiters, func(s string) {})
+	waitersDropDown.SetSelected(waiters[0])
 	form.Append("Table", tableLabel)
 	form.Append("waiter", waitersDropDown)
 	form.CancelText = "Back"
