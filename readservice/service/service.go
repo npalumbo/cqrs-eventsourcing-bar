@@ -146,7 +146,7 @@ func (rs *ReadService) todoListForWaiterHandler(w http.ResponseWriter, r *http.R
 
 	todoListForWaiter := rs.openTabQueries.TodoListForWaiter(waiter)
 
-	todoListForWaiterResponse := model.TodoListForWaiter{
+	todoListForWaiterResponse := model.TodoListForWaiterResponse{
 		Data:  todoListForWaiter,
 		OK:    true,
 		Error: "",
