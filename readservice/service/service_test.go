@@ -352,7 +352,7 @@ func (suite *ReadServiceTestSuite) TestTodoListForWaiter() {
 
 func (suite *ReadServiceTestSuite) SetupTest() {
 	suite.openTabQueries = *queries_mocks.NewOpenTabQueries(suite.T())
-	suite.readService = CreateReadService(1235, &suite.openTabQueries)
+	suite.readService = CreateReadService(1235, &suite.openTabQueries, nil)
 }
 
 func TestReadServiceTestSuite(t *testing.T) {

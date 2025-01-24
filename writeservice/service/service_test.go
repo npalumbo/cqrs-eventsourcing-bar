@@ -217,7 +217,7 @@ func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfMenuItemR
 	request, err := http.NewRequest(http.MethodPost, "", bytes.NewReader(json))
 	assert.NoError(suite.T(), err)
 
-	suite.menuItemRepository.On("ReadItems", suite.ctx, []int{1}).Return([]shared.OrderedItem{}, errors.New("error from menuItemRepo"))
+	suite.menuItemRepository.On("ReadItems", suite.ctx, []int{1}).Return([]shared.MenuItem{}, errors.New("error from menuItemRepo"))
 
 	// When
 	suite.writeService.placeOrderHandler(rr, request)
@@ -242,8 +242,8 @@ func (suite *WriteServiceTestSuite) TestPlaceOrderHandlerReturnsErrorIfDispatche
 	request, err := http.NewRequest(http.MethodPost, "", bytes.NewReader(json))
 	assert.NoError(suite.T(), err)
 
-	suite.menuItemRepository.On("ReadItems", suite.ctx, []int{1}).Return([]shared.OrderedItem{{
-		MenuItem:    1,
+	suite.menuItemRepository.On("ReadItems", suite.ctx, []int{1}).Return([]shared.MenuItem{{
+		ID:          1,
 		Description: "Blue water",
 		Price:       1.0,
 	}}, nil)

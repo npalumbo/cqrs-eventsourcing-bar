@@ -15,23 +15,23 @@ type MenuItemRepository struct {
 }
 
 // ReadAllItems provides a mock function with given fields: ctx
-func (_m *MenuItemRepository) ReadAllItems(ctx context.Context) ([]shared.OrderedItem, error) {
+func (_m *MenuItemRepository) ReadAllItems(ctx context.Context) ([]shared.MenuItem, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ReadAllItems")
 	}
 
-	var r0 []shared.OrderedItem
+	var r0 []shared.MenuItem
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]shared.OrderedItem, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]shared.MenuItem, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []shared.OrderedItem); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []shared.MenuItem); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]shared.OrderedItem)
+			r0 = ret.Get(0).([]shared.MenuItem)
 		}
 	}
 
@@ -45,23 +45,23 @@ func (_m *MenuItemRepository) ReadAllItems(ctx context.Context) ([]shared.Ordere
 }
 
 // ReadItems provides a mock function with given fields: ctx, menuItems
-func (_m *MenuItemRepository) ReadItems(ctx context.Context, menuItems []int) ([]shared.OrderedItem, error) {
+func (_m *MenuItemRepository) ReadItems(ctx context.Context, menuItems []int) ([]shared.MenuItem, error) {
 	ret := _m.Called(ctx, menuItems)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ReadItems")
 	}
 
-	var r0 []shared.OrderedItem
+	var r0 []shared.MenuItem
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, []int) ([]shared.OrderedItem, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, []int) ([]shared.MenuItem, error)); ok {
 		return rf(ctx, menuItems)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, []int) []shared.OrderedItem); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []shared.MenuItem); ok {
 		r0 = rf(ctx, menuItems)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]shared.OrderedItem)
+			r0 = ret.Get(0).([]shared.MenuItem)
 		}
 	}
 

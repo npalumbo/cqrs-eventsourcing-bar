@@ -7,6 +7,7 @@ import (
 	"golangsevillabar/messaging"
 	"golangsevillabar/queries"
 	"golangsevillabar/readservice/service"
+	"golangsevillabar/shared"
 )
 
 func main() {
@@ -28,10 +29,13 @@ func main() {
 		panicIfErrors(err)
 	}
 
+	menuItemRepository, err := shared.NewPostgresMenuItemRepository(ctx, dbConnectionString)
+	panicIfErrors(err)
+
 	err = natsEventSubscriber.OnCreatedEvent()
 	panicIfErrors(err)
 
-	readService := service.CreateReadService(8081, openTabQueries)
+	readService := service.CreateReadService(8081, openTabQueries, menuItemRepository)
 
 	err = readService.Start()
 	panicIfErrors(err)

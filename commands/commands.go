@@ -26,7 +26,7 @@ type OpenTab struct {
 
 type PlaceOrder struct {
 	BaseCommand
-	Items []shared.OrderedItem
+	Items []shared.MenuItem
 }
 
 type MarkDrinksServed struct {

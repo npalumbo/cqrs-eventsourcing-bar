@@ -63,8 +63,8 @@ func (suite *PostgresEventStoreTestSuite) TestLoadEvents() {
 	assert.True(t, ok)
 	assert.Equal(t, events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: aggregateId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    1,
+		Items: []shared.MenuItem{{
+			ID:          1,
 			Description: "water",
 			Price:       1.5,
 		}},
@@ -107,8 +107,8 @@ func (suite *PostgresEventStoreTestSuite) TestSaveEventsErrorsIfWeAttemptToOverr
 
 	eventsToSave := []events.Event{events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: aggregateId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    1,
+		Items: []shared.MenuItem{{
+			ID:          1,
 			Description: "water",
 			Price:       1.5,
 		}}}}
@@ -126,8 +126,8 @@ func (suite *PostgresEventStoreTestSuite) TestSaveEvents() {
 
 	eventsToSave := []events.Event{events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: aggregateId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    1,
+		Items: []shared.MenuItem{{
+			ID:          1,
 			Description: "water",
 			Price:       1.5,
 		}}}}

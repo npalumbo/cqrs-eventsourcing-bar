@@ -36,19 +36,19 @@ func (suite *PostgresMenuItemRepositoryTestSuite) TestReadItems() {
 	items, err := suite.menuItemRepository.ReadItems(suite.ctx, itemsToRead)
 	// Then
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), []shared.OrderedItem{
+	assert.Equal(suite.T(), []shared.MenuItem{
 		{
-			MenuItem:    1,
+			ID:          1,
 			Description: "blue water",
 			Price:       1.0,
 		},
 		{
-			MenuItem:    2,
+			ID:          2,
 			Description: "red water",
 			Price:       2.0,
 		},
 		{
-			MenuItem:    3,
+			ID:          3,
 			Description: "green water",
 			Price:       3.0,
 		},

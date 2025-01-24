@@ -1,6 +1,9 @@
 package model
 
-import "golangsevillabar/queries"
+import (
+	"golangsevillabar/queries"
+	"golangsevillabar/shared"
+)
 
 type QueryResponse[T any] struct {
 	OK    bool   `json:"ok"`
@@ -17,3 +20,5 @@ type TabForTableResponse QueryResponse[queries.TabStatus]
 type InvoiceForTableResponse QueryResponse[queries.TabInvoice]
 
 type TodoListForWaiterResponse QueryResponse[map[int][]queries.TabItem]
+
+type AllMenuItemsResponse QueryResponse[[]shared.MenuItem]

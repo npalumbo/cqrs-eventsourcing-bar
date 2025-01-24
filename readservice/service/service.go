@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golangsevillabar/queries"
 	"golangsevillabar/readservice/model"
+	"golangsevillabar/shared"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -12,12 +13,13 @@ import (
 )
 
 type ReadService struct {
-	httpServer     *http.Server
-	serveMux       *http.ServeMux
-	openTabQueries queries.OpenTabQueries
+	httpServer         *http.Server
+	serveMux           *http.ServeMux
+	openTabQueries     queries.OpenTabQueries
+	menuItemRepository shared.MenuItemRepository
 }
 
-func CreateReadService(port int, openTabQueries queries.OpenTabQueries) *ReadService {
+func CreateReadService(port int, openTabQueries queries.OpenTabQueries, menuItemRepository shared.MenuItemRepository) *ReadService {
 	srv := &ReadService{}
 
 	srv.serveMux = http.NewServeMux()
@@ -26,6 +28,7 @@ func CreateReadService(port int, openTabQueries queries.OpenTabQueries) *ReadSer
 	srv.serveMux.HandleFunc("/tabForTable", srv.tabForTableNumberHandler)
 	srv.serveMux.HandleFunc("/invoiceForTable", srv.invoiceForTableNumberHandler)
 	srv.serveMux.HandleFunc("/todoListForWaiter", srv.todoListForWaiterHandler)
+	srv.serveMux.HandleFunc("/allMenuItems", srv.allMenuItemsHandler)
 
 	srv.httpServer = &http.Server{
 		Addr: fmt.Sprintf(":%d", port),
@@ -33,6 +36,7 @@ func CreateReadService(port int, openTabQueries queries.OpenTabQueries) *ReadSer
 
 	srv.httpServer.Handler = srv.serveMux
 	srv.openTabQueries = openTabQueries
+	srv.menuItemRepository = menuItemRepository
 
 	return srv
 }
@@ -148,6 +152,29 @@ func (rs *ReadService) todoListForWaiterHandler(w http.ResponseWriter, r *http.R
 
 	todoListForWaiterResponse := model.TodoListForWaiterResponse{
 		Data:  todoListForWaiter,
+		OK:    true,
+		Error: "",
+	}
+
+	returnJsonOk(w, todoListForWaiterResponse)
+}
+
+func (rs *ReadService) allMenuItemsHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		returnJsonError(w, "Method Not Allowed", http.StatusMethodNotAllowed, &model.QueryResponse[any]{})
+		return
+	}
+
+	allMenuItems, err := rs.menuItemRepository.ReadAllItems(r.Context())
+
+	if err != nil {
+		returnJsonError(w, fmt.Sprintf("Error processing allMenuItems request: %v", err), http.StatusInternalServerError, &model.QueryResponse[any]{})
+		return
+	}
+
+	todoListForWaiterResponse := model.AllMenuItemsResponse{
+		Data:  allMenuItems,
 		OK:    true,
 		Error: "",
 	}

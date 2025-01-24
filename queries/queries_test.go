@@ -86,8 +86,8 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithOneOrder() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: tabId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    10,
+		Items: []shared.MenuItem{{
+			ID:          10,
 			Description: "Water",
 			Price:       1,
 		}},
@@ -132,8 +132,8 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: tabId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    10,
+		Items: []shared.MenuItem{{
+			ID:          10,
 			Description: "Water",
 			Price:       1,
 		}},
@@ -143,8 +143,8 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersOnlyOneServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: tabId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    11,
+		Items: []shared.MenuItem{{
+			ID:          11,
 			Description: "Beer",
 			Price:       2,
 		}},
@@ -195,8 +195,8 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: tabId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    10,
+		Items: []shared.MenuItem{{
+			ID:          10,
 			Description: "Water",
 			Price:       1,
 		}},
@@ -205,8 +205,8 @@ func (suite *QueriesTestSuite) TestAnOpenTabWithTwoOrdersBothServed() {
 
 	err = suite.openTabQueries.HandleEvent(events.DrinksOrdered{
 		BaseEvent: events.BaseEvent{ID: tabId},
-		Items: []shared.OrderedItem{{
-			MenuItem:    11,
+		Items: []shared.MenuItem{{
+			ID:          11,
 			Description: "Beer",
 			Price:       2,
 		}},

@@ -13,14 +13,14 @@ type postgresMenuItemRepository struct {
 	conn *pgx.Conn
 }
 
-func (p *postgresMenuItemRepository) ReadAllItems(ctx context.Context) ([]OrderedItem, error) {
+func (p *postgresMenuItemRepository) ReadAllItems(ctx context.Context) ([]MenuItem, error) {
 	rows, err := p.conn.Query(ctx, "SELECT id, description, price FROM menu_item ORDER by id")
 
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	allItems := []OrderedItem{}
+	allItems := []MenuItem{}
 
 	for rows.Next() {
 		var id int
@@ -29,8 +29,8 @@ func (p *postgresMenuItemRepository) ReadAllItems(ctx context.Context) ([]Ordere
 		if err := rows.Scan(&id, &description, &price); err != nil {
 			return nil, err
 		}
-		allItems = append(allItems, OrderedItem{
-			MenuItem:    id,
+		allItems = append(allItems, MenuItem{
+			ID:          id,
 			Description: description,
 			Price:       price,
 		})
@@ -39,7 +39,7 @@ func (p *postgresMenuItemRepository) ReadAllItems(ctx context.Context) ([]Ordere
 	return allItems, nil
 }
 
-func (p *postgresMenuItemRepository) ReadItems(ctx context.Context, menuItems []int) ([]OrderedItem, error) {
+func (p *postgresMenuItemRepository) ReadItems(ctx context.Context, menuItems []int) ([]MenuItem, error) {
 	slices.Sort(menuItems)
 	originalItems := slices.Clone(menuItems)
 	uniqueItems := slices.Compact(menuItems)
@@ -50,7 +50,7 @@ func (p *postgresMenuItemRepository) ReadItems(ctx context.Context, menuItems []
 	}
 	defer rows.Close()
 
-	var retrievedItems map[int]OrderedItem = make(map[int]OrderedItem)
+	var retrievedItems map[int]MenuItem = make(map[int]MenuItem)
 	for rows.Next() {
 		var id int
 		var description string
@@ -58,8 +58,8 @@ func (p *postgresMenuItemRepository) ReadItems(ctx context.Context, menuItems []
 		if err := rows.Scan(&id, &description, &price); err != nil {
 			return nil, err
 		}
-		retrievedItems[id] = OrderedItem{
-			MenuItem:    id,
+		retrievedItems[id] = MenuItem{
+			ID:          id,
 			Description: description,
 			Price:       price,
 		}
@@ -71,7 +71,7 @@ func (p *postgresMenuItemRepository) ReadItems(ctx context.Context, menuItems []
 		return nil, fmt.Errorf("requested %d distinct items, but read from DB %d distinct items", amountOfInputItems, amountOfRetrievedItems)
 	}
 
-	orderedItems := []OrderedItem{}
+	orderedItems := []MenuItem{}
 
 	for _, i := range originalItems {
 		orderedItems = append(orderedItems, retrievedItems[i])

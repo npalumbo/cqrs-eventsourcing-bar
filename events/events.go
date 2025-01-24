@@ -33,7 +33,7 @@ type TabOpened struct {
 
 type DrinksOrdered struct {
 	BaseEvent
-	Items []shared.OrderedItem `json:"items"`
+	Items []shared.MenuItem `json:"items"`
 }
 
 type DrinksServed struct {

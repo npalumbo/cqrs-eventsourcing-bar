@@ -39,7 +39,7 @@ func (o *openTabs) handleDrinksOrdered(e events.DrinksOrdered) error {
 	addToServe := []TabItem{}
 	for _, orderedItem := range e.Items {
 		tabItem := TabItem{
-			MenuNumber:  orderedItem.MenuItem,
+			MenuNumber:  orderedItem.ID,
 			Description: orderedItem.Description,
 			Price:       orderedItem.Price,
 		}
