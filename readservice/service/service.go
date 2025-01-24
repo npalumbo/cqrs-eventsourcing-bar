@@ -44,10 +44,8 @@ func (rs *ReadService) activeTablesHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	activeTableNumbersResponse := model.QueryResponse[model.ActiveTableNumbersResponse]{
-		Data: model.ActiveTableNumbersResponse{
-			ActiveTables: rs.openTabQueries.ActiveTableNumbers(),
-		},
+	activeTableNumbersResponse := model.ActiveTableNumbersResponse{
+		Data:  rs.openTabQueries.ActiveTableNumbers(),
 		OK:    true,
 		Error: "",
 	}
@@ -73,8 +71,8 @@ func (rs *ReadService) tabIdForTableNumberHandler(w http.ResponseWriter, r *http
 		returnJsonError(w, fmt.Sprintf("Error processing tabIdForTable request: %v", err), http.StatusInternalServerError, &model.QueryResponse[any]{})
 		return
 	}
-	tabIdForTableResponse := model.QueryResponse[model.TabIdForTableResponse]{
-		Data:  model.TabIdForTableResponse{TabId: tabId.String()},
+	tabIdForTableResponse := model.TabIdForTableResponse{
+		Data:  tabId.String(),
 		OK:    true,
 		Error: "",
 	}
@@ -100,8 +98,8 @@ func (rs *ReadService) tabForTableNumberHandler(w http.ResponseWriter, r *http.R
 		returnJsonError(w, fmt.Sprintf("Error processing tabForTable request: %v", err), http.StatusInternalServerError, &model.QueryResponse[any]{})
 		return
 	}
-	tabForTableResponse := model.QueryResponse[model.TabForTableResponse]{
-		Data:  model.TabForTableResponse{TabStatus: tabStatus},
+	tabForTableResponse := model.TabForTableResponse{
+		Data:  tabStatus,
 		OK:    true,
 		Error: "",
 	}
@@ -128,8 +126,8 @@ func (rs *ReadService) invoiceForTableNumberHandler(w http.ResponseWriter, r *ht
 		returnJsonError(w, fmt.Sprintf("Error processing invoiceForTable request: %v", err), http.StatusInternalServerError, &model.QueryResponse[any]{})
 		return
 	}
-	invoiceForTableResponse := model.QueryResponse[model.InvoiceForTableResponse]{
-		Data:  model.InvoiceForTableResponse{TabInvoice: tabInvoice},
+	invoiceForTableResponse := model.InvoiceForTableResponse{
+		Data:  tabInvoice,
 		OK:    true,
 		Error: "",
 	}
@@ -148,8 +146,8 @@ func (rs *ReadService) todoListForWaiterHandler(w http.ResponseWriter, r *http.R
 
 	todoListForWaiter := rs.openTabQueries.TodoListForWaiter(waiter)
 
-	todoListForWaiterResponse := model.QueryResponse[model.TodoListForWaiterResponse]{
-		Data:  model.TodoListForWaiterResponse{TabItemsForTable: todoListForWaiter},
+	todoListForWaiterResponse := model.TodoListForWaiter{
+		Data:  todoListForWaiter,
 		OK:    true,
 		Error: "",
 	}

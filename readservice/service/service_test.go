@@ -50,7 +50,7 @@ func (suite *ReadServiceTestSuite) TestActiveTablesHandler() {
 	assert.Equal(suite.T(), string("200 OK"), rr.Result().Status)
 	bytes, err := io.ReadAll(rr.Result().Body)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"active_tables\":[1,2]}}", string(bytes))
+	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":[1,2]}", string(bytes))
 }
 
 func (suite *ReadServiceTestSuite) TestTabIdForTableNumberReturnsErrorIfNotGet() {
@@ -133,7 +133,7 @@ func (suite *ReadServiceTestSuite) TestTabIdForTableNumber() {
 	assert.Equal(suite.T(), string("200 OK"), rr.Result().Status)
 	bytes, err := io.ReadAll(rr.Result().Body)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"tab_id\":\"2qPTBJCN6ib7iJ6WaIVvoSmySSV\"}}", string(bytes))
+	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":\"2qPTBJCN6ib7iJ6WaIVvoSmySSV\"}", string(bytes))
 }
 
 func (suite *ReadServiceTestSuite) TestTabForTableNumberReturnsErrorIfNotGet() {
@@ -220,7 +220,7 @@ func (suite *ReadServiceTestSuite) TestTabForTableNumber() {
 	assert.Equal(suite.T(), string("200 OK"), rr.Result().Status)
 	bytes, err := io.ReadAll(rr.Result().Body)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"tab_status\":{\"tab_id\":\"2qPTBJCN6ib7iJ6WaIVvoSmySSV\",\"table_number\":19,\"to_serve\":[],\"served\":[]}}}", string(bytes))
+	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"tab_id\":\"2qPTBJCN6ib7iJ6WaIVvoSmySSV\",\"table_number\":19,\"to_serve\":[],\"served\":[]}}", string(bytes))
 }
 
 func (suite *ReadServiceTestSuite) TestInvoiceForTableReturnsErrorIfNotGet() {
@@ -308,7 +308,7 @@ func (suite *ReadServiceTestSuite) TestInvoiceForTable() {
 	assert.Equal(suite.T(), string("200 OK"), rr.Result().Status)
 	bytes, err := io.ReadAll(rr.Result().Body)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"tab_invoice\":{\"tab_id\":\"2qPTBJCN6ib7iJ6WaIVvoSmySSV\",\"table_number\":19,\"items\":[],\"total\":0,\"has_unserved_items\":false}}}", string(bytes))
+	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"tab_id\":\"2qPTBJCN6ib7iJ6WaIVvoSmySSV\",\"table_number\":19,\"items\":[],\"total\":0,\"has_unserved_items\":false}}", string(bytes))
 }
 
 func (suite *ReadServiceTestSuite) TestTodoListForWaiterReturnsErrorIfNotGet() {
@@ -347,7 +347,7 @@ func (suite *ReadServiceTestSuite) TestTodoListForWaiter() {
 	assert.Equal(suite.T(), string("200 OK"), rr.Result().Status)
 	bytes, err := io.ReadAll(rr.Result().Body)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"tab_items_for_table\":{\"19\":[{\"menu_number\":1,\"description\":\"Blue Water\",\"price\":1}]}}}", string(bytes))
+	assert.Equal(suite.T(), "{\"ok\":true,\"error\":\"\",\"data\":{\"19\":[{\"menu_number\":1,\"description\":\"Blue Water\",\"price\":1}]}}", string(bytes))
 }
 
 func (suite *ReadServiceTestSuite) SetupTest() {

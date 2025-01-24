@@ -17,8 +17,8 @@ func NewReadClient(httpClient *http.Client, url string) *ReadClient {
 	return &ReadClient{httpClient: httpClient, url: url}
 }
 
-func (c *ReadClient) GetActiveTables() (model.QueryResponse[model.ActiveTableNumbersResponse], error) {
-	response := model.QueryResponse[model.ActiveTableNumbersResponse]{}
+func (c *ReadClient) GetActiveTables() (model.ActiveTableNumbersResponse, error) {
+	response := model.ActiveTableNumbersResponse{}
 	req, err := http.NewRequest("GET", c.url+"/activeTableNumbers", nil)
 	if err != nil {
 		return response, err
@@ -27,8 +27,8 @@ func (c *ReadClient) GetActiveTables() (model.QueryResponse[model.ActiveTableNum
 	return processResponse(c, req, response)
 }
 
-func (c *ReadClient) GetTabIdForTable(tableNumber int) (model.QueryResponse[model.TabIdForTableResponse], error) {
-	response := model.QueryResponse[model.TabIdForTableResponse]{}
+func (c *ReadClient) GetTabIdForTable(tableNumber int) (model.TabIdForTableResponse, error) {
+	response := model.TabIdForTableResponse{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/tabIdForTable?table_number=%d", c.url, tableNumber), nil)
 	if err != nil {
 		return response, err
@@ -37,8 +37,8 @@ func (c *ReadClient) GetTabIdForTable(tableNumber int) (model.QueryResponse[mode
 	return processResponse(c, req, response)
 }
 
-func (c *ReadClient) GetTabForTable(tableNumber int) (model.QueryResponse[model.TabForTableResponse], error) {
-	response := model.QueryResponse[model.TabForTableResponse]{}
+func (c *ReadClient) GetTabForTable(tableNumber int) (model.TabForTableResponse, error) {
+	response := model.TabForTableResponse{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/tabForTable?table_number=%d", c.url, tableNumber), nil)
 	if err != nil {
 		return response, err
@@ -47,8 +47,8 @@ func (c *ReadClient) GetTabForTable(tableNumber int) (model.QueryResponse[model.
 	return processResponse(c, req, response)
 }
 
-func (c *ReadClient) GetInvoiceForTable(tableNumber int) (model.QueryResponse[model.InvoiceForTableResponse], error) {
-	response := model.QueryResponse[model.InvoiceForTableResponse]{}
+func (c *ReadClient) GetInvoiceForTable(tableNumber int) (model.InvoiceForTableResponse, error) {
+	response := model.InvoiceForTableResponse{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/invoiceForTable?table_number=%d", c.url, tableNumber), nil)
 	if err != nil {
 		return response, err

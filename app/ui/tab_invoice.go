@@ -59,12 +59,12 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	}
 
 	invoice := response.Data
-	i.currentInvoiceData = &invoice.TabInvoice
+	i.currentInvoiceData = &invoice
 
 	*i.tabItems = nil
-	*i.tabItems = append(*i.tabItems, invoice.TabInvoice.Items...)
+	*i.tabItems = append(*i.tabItems, invoice.Items...)
 
-	if invoice.TabInvoice.HasUnservedItems {
+	if invoice.HasUnservedItems {
 		i.closeTabButton.Disable()
 	}
 
@@ -72,14 +72,14 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	i.containerInCard.Refresh()
 	i.container.Refresh()
 	i.tableLabel.Text = fmt.Sprintf("%d", i.table)
-	i.totalLabel.Text = fmt.Sprintf("%.2f", invoice.TabInvoice.Total)
-	i.currentTotal, err = strconv.ParseFloat(fmt.Sprintf("%.2f", invoice.TabInvoice.Total), 64)
+	i.totalLabel.Text = fmt.Sprintf("%.2f", invoice.Total)
+	i.currentTotal, err = strconv.ParseFloat(fmt.Sprintf("%.2f", invoice.Total), 64)
 	if err != nil {
 		slog.Error("could not convert current total to float", slog.Any("error", err))
 	}
 
-	i.hasUnservedItemsLabel.Text = fmt.Sprintf("%t", invoice.TabInvoice.HasUnservedItems)
-	if invoice.TabInvoice.HasUnservedItems {
+	i.hasUnservedItemsLabel.Text = fmt.Sprintf("%t", invoice.HasUnservedItems)
+	if invoice.HasUnservedItems {
 		i.closeTabButton.Disable()
 	} else {
 		i.closeTabButton.Enable()

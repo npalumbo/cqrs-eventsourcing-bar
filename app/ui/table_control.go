@@ -46,7 +46,7 @@ func (tc *tableControl) UpdateActiveTables() {
 	for _, tb := range tc.tableButtons {
 		tb.SetInactive()
 	}
-	for _, tableID := range activeTables.Data.ActiveTables {
+	for _, tableID := range activeTables.Data {
 		tabStatus, err := tc.client.GetTabForTable(tableID)
 		if err != nil {
 			slog.Error("client error calling readapi", slog.Any("error", err))
@@ -56,7 +56,7 @@ func (tc *tableControl) UpdateActiveTables() {
 			slog.Error("server error calling readapi", slog.Any("error", activeTables.Error))
 			return
 		}
-		tc.tableButtons[tableID-1].SetActive(&tabStatus.Data)
+		tc.tableButtons[tableID-1].SetActive(&tabStatus)
 	}
 	tc.Container.Refresh()
 }

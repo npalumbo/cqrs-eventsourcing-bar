@@ -5,6 +5,7 @@ import "context"
 //go:generate mockery --name MenuItemRepository
 type MenuItemRepository interface {
 	ReadItems(ctx context.Context, menuItems []int) ([]OrderedItem, error)
+	ReadAllItems(ctx context.Context) ([]OrderedItem, error)
 }
 
 type OrderedItem struct {

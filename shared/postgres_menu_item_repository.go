@@ -13,6 +13,32 @@ type postgresMenuItemRepository struct {
 	conn *pgx.Conn
 }
 
+func (p *postgresMenuItemRepository) ReadAllItems(ctx context.Context) ([]OrderedItem, error) {
+	rows, err := p.conn.Query(ctx, "SELECT id, description, price FROM menu_item ORDER by id")
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	allItems := []OrderedItem{}
+
+	for rows.Next() {
+		var id int
+		var description string
+		var price float64
+		if err := rows.Scan(&id, &description, &price); err != nil {
+			return nil, err
+		}
+		allItems = append(allItems, OrderedItem{
+			MenuItem:    id,
+			Description: description,
+			Price:       price,
+		})
+	}
+
+	return allItems, nil
+}
+
 func (p *postgresMenuItemRepository) ReadItems(ctx context.Context, menuItems []int) ([]OrderedItem, error) {
 	slices.Sort(menuItems)
 	originalItems := slices.Clone(menuItems)
