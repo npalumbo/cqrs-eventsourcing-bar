@@ -31,8 +31,14 @@ func newTableButton(ID int, waiters []string, stageManager *StageManager) *table
 				slog.Error("error launching invoice screen", slog.Any("error", err))
 			}
 		}),
+		fyne.NewMenuItem("Order drinks", func() {
+			err := stageManager.TakeOver(PlaceOrderStage, ID)
+			if err != nil {
+				slog.Error("error launching order drinks screen", slog.Any("error", err))
+			}
+		}),
 	)
-	tableButton.menuInactive = fyne.NewMenu("Active Table",
+	tableButton.menuInactive = fyne.NewMenu("Inactive Table",
 		fyne.NewMenuItem("Open Tab", func() {
 			err := stageManager.TakeOver(OpenTabStage, ID)
 			if err != nil {

@@ -25,16 +25,18 @@ func main() {
 	mainContainer := ui.CreateMainContent(amountOfTables, readApiClient, &stageManager, waiters, w)
 	openTabStage := ui.CreateOpenTabScreen(waiters, writeApiClient, &stageManager)
 	invoiceStage := ui.CreateInvoiceScreen(readApiClient, writeApiClient, &stageManager, w)
+	placeOrderStage := ui.CreatePlaceOrderScreen(writeApiClient, readApiClient, &stageManager)
 
 	stageManager.RegisterStager(mainContainer)
 	stageManager.RegisterStager(openTabStage)
 	stageManager.RegisterStager(invoiceStage)
+	stageManager.RegisterStager(placeOrderStage)
 
 	w.SetContent(stageManager.GetContainer())
 
 	err := stageManager.TakeOver(ui.MainContentStage, nil)
 	if err != nil {
-		slog.Error("error opening screen", slog.Any("error", err))
+		slog.Error("error opening main content screen", slog.Any("error", err))
 	}
 
 	w.Resize(fyne.NewSize(600, 600))
