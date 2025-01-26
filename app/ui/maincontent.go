@@ -17,18 +17,15 @@ type MainContent struct {
 	mainContentContainer *fyne.Container
 }
 
-// ExecuteOnTakeOver implements Stager.
 func (m *MainContent) ExecuteOnTakeOver(param interface{}) {
 	time.Sleep(200 * time.Millisecond)
 	m.tableControl.UpdateActiveTables()
 }
 
-// GetPaintedContainer implements Stager.
 func (m *MainContent) GetPaintedContainer() *fyne.Container {
 	return m.mainContentContainer
 }
 
-// GetStageName implements Stager.
 func (m *MainContent) GetStageName() string {
 	return MainContentStage
 }

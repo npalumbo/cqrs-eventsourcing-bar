@@ -55,6 +55,37 @@ func (suite *PostgresMenuItemRepositoryTestSuite) TestReadItems() {
 	}, items)
 }
 
+func (suite *PostgresMenuItemRepositoryTestSuite) TestReadItemsShouldReturnRepeated() {
+	// Given
+	itemsToRead := []int{1, 2, 3, 1}
+	// When
+	items, err := suite.menuItemRepository.ReadItems(suite.ctx, itemsToRead)
+	// Then
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), []shared.MenuItem{
+		{
+			ID:          1,
+			Description: "blue water",
+			Price:       1.0,
+		},
+		{
+			ID:          1,
+			Description: "blue water",
+			Price:       1.0,
+		},
+		{
+			ID:          2,
+			Description: "red water",
+			Price:       2.0,
+		},
+		{
+			ID:          3,
+			Description: "green water",
+			Price:       3.0,
+		},
+	}, items)
+}
+
 func (suite *PostgresMenuItemRepositoryTestSuite) SetupSuite() {
 	suite.ctx = context.Background()
 	pgContainer, err := testhelpers.CreatePostgresContainer(suite.T(), suite.ctx)

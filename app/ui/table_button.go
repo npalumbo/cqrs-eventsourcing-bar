@@ -2,12 +2,17 @@ package ui
 
 import (
 	"fmt"
-	"golangsevillabar/readservice/model"
+	"golangsevillabar/queries"
 	"log/slog"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 )
+
+type tableNumberAndTabId struct {
+	tableNumber int
+	tabId       string
+}
 
 type tableButton struct {
 	widget.Button
@@ -17,7 +22,7 @@ type tableButton struct {
 	Active       bool
 	waiters      []string
 	stageManager *StageManager
-	tabStatus    *model.TabForTableResponse
+	tabStatus    *queries.TabStatus
 }
 
 func newTableButton(ID int, waiters []string, stageManager *StageManager) *tableButton {
@@ -32,7 +37,10 @@ func newTableButton(ID int, waiters []string, stageManager *StageManager) *table
 			}
 		}),
 		fyne.NewMenuItem("Order drinks", func() {
-			err := stageManager.TakeOver(PlaceOrderStage, ID)
+			err := stageManager.TakeOver(PlaceOrderStage, tableNumberAndTabId{
+				tableNumber: ID,
+				tabId:       tableButton.tabStatus.TabID,
+			})
 			if err != nil {
 				slog.Error("error launching order drinks screen", slog.Any("error", err))
 			}
@@ -64,7 +72,7 @@ func (t *tableButton) Tapped(e *fyne.PointEvent) {
 func (t *tableButton) TappedSecondary(_ *fyne.PointEvent) {
 }
 
-func (t *tableButton) SetActive(tabStatus *model.TabForTableResponse) {
+func (t *tableButton) SetActive(tabStatus *queries.TabStatus) {
 	t.Active = true
 	t.Importance = widget.HighImportance
 	t.tabStatus = tabStatus
