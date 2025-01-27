@@ -1,21 +1,25 @@
 package ui
 
 import (
-	"errors"
 	"fmt"
 	"golangsevillabar/app/apiclient"
 	"golangsevillabar/queries"
-	"golangsevillabar/writeservice/model"
 	"log/slog"
+	"slices"
 	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
 const InvoiceStage = "Invoice"
+
+type tabItemWithAmount struct {
+	tabItem  queries.TabItem
+	amount   int
+	subTotal float64
+}
 
 type invoiceScreen struct {
 	table                 int
@@ -29,9 +33,8 @@ type invoiceScreen struct {
 	readApiClient         *apiclient.ReadClient
 	writeApiClient        *apiclient.WriteClient
 	stageManager          *StageManager
-	tabItems              *[]queries.TabItem
+	tabItemsWithAmount    *[]tabItemWithAmount
 	closeTabButton        *widget.Button
-	closeTabForm          *dialog.FormDialog
 	payingWithEntry       *widget.Entry
 	currentTotal          float64
 	currentTip            float64
@@ -45,7 +48,6 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	tableNumber := param.(int)
 	i.table = tableNumber
 	i.payingWithEntry.Text = ""
-	// i.payingWithEntry.SetValidationError(errors.New("must set paying with"))
 
 	response, err := i.readApiClient.GetInvoiceForTable(tableNumber)
 	if err != nil {
@@ -61,12 +63,8 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	invoice := response.Data
 	i.currentInvoiceData = &invoice
 
-	*i.tabItems = nil
-	*i.tabItems = append(*i.tabItems, invoice.Items...)
-
-	if invoice.HasUnservedItems {
-		i.closeTabButton.Disable()
-	}
+	*i.tabItemsWithAmount = nil
+	*i.tabItemsWithAmount = append(*i.tabItemsWithAmount, tabItemsWithAmount(invoice.Items)...)
 
 	i.itemsList.Refresh()
 	i.containerInCard.Refresh()
@@ -97,23 +95,16 @@ func (i *invoiceScreen) GetStageName() string {
 func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *apiclient.WriteClient, stageManager *StageManager, w fyne.Window) *invoiceScreen {
 	tableLabel := widget.NewLabel("")
 	tipLabel := widget.NewLabel("")
-	tabItems := &[]queries.TabItem{}
-	itemsList := widget.NewList(func() int { return len(*tabItems) }, func() fyne.CanvasObject { return widget.NewLabel("") }, func(lii widget.ListItemID, co fyne.CanvasObject) {
-		tabItem := (*tabItems)[lii]
+	tabItemsWithAmount := &[]tabItemWithAmount{}
+	itemsList := widget.NewList(func() int { return len(*tabItemsWithAmount) }, func() fyne.CanvasObject { return widget.NewLabel("") }, func(lii widget.ListItemID, co fyne.CanvasObject) {
+		tabItemWithAmount := (*tabItemsWithAmount)[lii]
 		listItemLabel := co.(*widget.Label)
-		listItemLabel.Text = fmt.Sprintf("%s %.2f", tabItem.Description, tabItem.Price)
+		listItemLabel.Text = fmt.Sprintf("%d x %s %.2f  ...  %.2f", tabItemWithAmount.amount, tabItemWithAmount.tabItem.Description, tabItemWithAmount.tabItem.Price, tabItemWithAmount.subTotal)
 		listItemLabel.Refresh()
 	})
 	totalLabel := widget.NewLabel("")
 	hasUnservedItemsLabel := widget.NewLabel("")
-	formItems := []*widget.FormItem{}
-	formItems = append(formItems, widget.NewFormItem("Total", totalLabel))
 	payingWithEntry := widget.NewEntry()
-
-	payingWithFormItem := widget.NewFormItem("Paying with", payingWithEntry)
-	payingWithFormItem.HintText = "Amount"
-
-	formItems = append(formItems, payingWithFormItem)
 
 	invoiceScreen := &invoiceScreen{
 		table:                 0,
@@ -125,41 +116,18 @@ func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *ap
 		writeApiClient:        writeApiClient,
 		stageManager:          stageManager,
 		itemsList:             itemsList,
-		tabItems:              tabItems,
+		tabItemsWithAmount:    tabItemsWithAmount,
 		payingWithEntry:       payingWithEntry,
 		currentTotal:          -1,
 		currentTip:            0,
 	}
 
-	closeTabForm := dialog.NewForm("Close Tab", "Close", "Cancel", formItems, func(hitCloseButton bool) {
-		slog.Info("Value of b", slog.Any("b", hitCloseButton))
+	closeTabDialog := createCoseTabFormDialog(w, payingWithEntry, invoiceScreen, writeApiClient)
 
-		if hitCloseButton {
-
-			amount, err := strconv.ParseFloat(invoiceScreen.payingWithEntry.Text, 64)
-			if err != nil {
-				slog.Error("error converting paying with before closing tab", slog.Any("error", err))
-			}
-			err = writeApiClient.ExecuteCommand(model.CloseTabRequest{
-				TabId:      invoiceScreen.currentInvoiceData.TabID,
-				AmountPaid: amount,
-			})
-			if err != nil {
-				slog.Error("error calling write api", slog.Any("error", err))
-			}
-			// If no error, we asume the close tab command worked and refresh the Tip field
-			invoiceScreen.currentTip = amount - invoiceScreen.currentTotal
-			invoiceScreen.tipLabel.Text = fmt.Sprintf("%.2f", invoiceScreen.currentTip)
-			invoiceScreen.closeTabButton.Disable()
-			invoiceScreen.tipLabel.Refresh()
-			invoiceScreen.containerInCard.Refresh()
-		}
-	}, w)
-
-	closeTabForm.Refresh()
+	closeTabDialog.Refresh()
 
 	closeTabButton := widget.NewButton("Close Tab", func() {
-		closeTabForm.Show()
+		closeTabDialog.Show()
 	})
 
 	containerInCard := container.NewGridWithColumns(2,
@@ -179,24 +147,43 @@ func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *ap
 
 	container := container.NewStack(widget.NewCard("Invoice", "", containerInCard))
 
-	payingWithEntry.SetValidationError(errors.New("must set paying with"))
-
-	payingWithEntry.Validator = func(s string) error {
-		amount, err := strconv.ParseFloat(s, 64)
-		if err != nil {
-			return err
-		}
-		if amount < invoiceScreen.currentTotal {
-			return errors.New("need to pay with an amount higher than total")
-		}
-
-		return nil
-	}
-
 	invoiceScreen.containerInCard = containerInCard
 	invoiceScreen.container = container
 	invoiceScreen.closeTabButton = closeTabButton
-	invoiceScreen.closeTabForm = closeTabForm
 
 	return invoiceScreen
+}
+
+func tabItemsWithAmount(tabItems []queries.TabItem) []tabItemWithAmount {
+	var amountsPerItemID map[int]int = make(map[int]int)
+	tabItemMenuNumbers := []int{}
+	var tabItemsByMenuNumbers map[int]queries.TabItem = make(map[int]queries.TabItem)
+
+	for _, tabItem := range tabItems {
+		_, ok := tabItemsByMenuNumbers[tabItem.MenuNumber]
+		if !ok {
+			tabItemsByMenuNumbers[tabItem.MenuNumber] = tabItem
+		}
+		amount, ok := amountsPerItemID[tabItem.MenuNumber]
+		if !ok {
+			amountsPerItemID[tabItem.MenuNumber] = 1
+		} else {
+			amountsPerItemID[tabItem.MenuNumber] = amount + 1
+		}
+		tabItemMenuNumbers = append(tabItemMenuNumbers, tabItem.MenuNumber)
+	}
+
+	slices.Sort(tabItemMenuNumbers)
+	tabItemWithAmounts := []tabItemWithAmount{}
+
+	for _, menuNumber := range tabItemMenuNumbers {
+		amount := amountsPerItemID[menuNumber]
+		tabItemWithAmounts = append(tabItemWithAmounts, tabItemWithAmount{
+			amount:   amount,
+			tabItem:  tabItemsByMenuNumbers[menuNumber],
+			subTotal: float64(amount) * tabItemsByMenuNumbers[menuNumber].Price,
+		})
+	}
+
+	return tabItemWithAmounts
 }
