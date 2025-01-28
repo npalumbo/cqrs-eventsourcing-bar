@@ -5,7 +5,6 @@ import (
 	"golangsevillabar/app/apiclient"
 	"golangsevillabar/queries"
 	"log/slog"
-	"slices"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -64,7 +63,7 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	i.currentInvoiceData = &invoice
 
 	*i.tabItemsWithAmount = nil
-	*i.tabItemsWithAmount = append(*i.tabItemsWithAmount, tabItemsWithAmount(invoice.Items)...)
+	*i.tabItemsWithAmount = append(*i.tabItemsWithAmount, getTabItemsWithAmount(invoice.Items)...)
 
 	i.itemsList.Refresh()
 	i.containerInCard.Refresh()
@@ -96,12 +95,7 @@ func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *ap
 	tableLabel := widget.NewLabel("")
 	tipLabel := widget.NewLabel("")
 	tabItemsWithAmount := &[]tabItemWithAmount{}
-	itemsList := widget.NewList(func() int { return len(*tabItemsWithAmount) }, func() fyne.CanvasObject { return widget.NewLabel("") }, func(lii widget.ListItemID, co fyne.CanvasObject) {
-		tabItemWithAmount := (*tabItemsWithAmount)[lii]
-		listItemLabel := co.(*widget.Label)
-		listItemLabel.Text = fmt.Sprintf("%d x %s %.2f  ...  %.2f", tabItemWithAmount.amount, tabItemWithAmount.tabItem.Description, tabItemWithAmount.tabItem.Price, tabItemWithAmount.subTotal)
-		listItemLabel.Refresh()
-	})
+	itemsList := CreateTabItemList(tabItemsWithAmount)
 	totalLabel := widget.NewLabel("")
 	hasUnservedItemsLabel := widget.NewLabel("")
 	payingWithEntry := widget.NewEntry()
@@ -152,38 +146,4 @@ func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *ap
 	invoiceScreen.closeTabButton = closeTabButton
 
 	return invoiceScreen
-}
-
-func tabItemsWithAmount(tabItems []queries.TabItem) []tabItemWithAmount {
-	var amountsPerItemID map[int]int = make(map[int]int)
-	tabItemMenuNumbers := []int{}
-	var tabItemsByMenuNumbers map[int]queries.TabItem = make(map[int]queries.TabItem)
-
-	for _, tabItem := range tabItems {
-		_, ok := tabItemsByMenuNumbers[tabItem.MenuNumber]
-		if !ok {
-			tabItemsByMenuNumbers[tabItem.MenuNumber] = tabItem
-		}
-		amount, ok := amountsPerItemID[tabItem.MenuNumber]
-		if !ok {
-			amountsPerItemID[tabItem.MenuNumber] = 1
-		} else {
-			amountsPerItemID[tabItem.MenuNumber] = amount + 1
-		}
-		tabItemMenuNumbers = append(tabItemMenuNumbers, tabItem.MenuNumber)
-	}
-
-	slices.Sort(tabItemMenuNumbers)
-	tabItemWithAmounts := []tabItemWithAmount{}
-
-	for _, menuNumber := range tabItemMenuNumbers {
-		amount := amountsPerItemID[menuNumber]
-		tabItemWithAmounts = append(tabItemWithAmounts, tabItemWithAmount{
-			amount:   amount,
-			tabItem:  tabItemsByMenuNumbers[menuNumber],
-			subTotal: float64(amount) * tabItemsByMenuNumbers[menuNumber].Price,
-		})
-	}
-
-	return tabItemWithAmounts
 }
