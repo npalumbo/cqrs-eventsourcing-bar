@@ -51,6 +51,12 @@ func newTableButton(ID int, waiters []string, stageManager *StageManager) *table
 				slog.Error("error launching tab status screen", slog.Any("error", err))
 			}
 		}),
+		fyne.NewMenuItem("Waiter to-do list", func() {
+			err := stageManager.TakeOver(WaiterTodoListStage, ID)
+			if err != nil {
+				slog.Error("error launching waiter todo list screen", slog.Any("error", err))
+			}
+		}),
 	)
 	tableButton.menuInactive = fyne.NewMenu("Inactive Table",
 		fyne.NewMenuItem("Open Tab", func() {

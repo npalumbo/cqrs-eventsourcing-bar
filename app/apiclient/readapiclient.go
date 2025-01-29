@@ -57,6 +57,16 @@ func (c *ReadClient) GetInvoiceForTable(tableNumber int) (model.InvoiceForTableR
 	return processResponse(c, req, response)
 }
 
+func (c *ReadClient) GetTodoListForWaiter() (model.TodoListForWaiterResponse, error) {
+	response := model.TodoListForWaiterResponse{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/todoListForWaiter", c.url), nil)
+	if err != nil {
+		return response, err
+	}
+
+	return processResponse(c, req, response)
+}
+
 func (c *ReadClient) GetAllMenuItems() (model.AllMenuItemsResponse, error) {
 	response := model.AllMenuItemsResponse{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/allMenuItems", c.url), nil)

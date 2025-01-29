@@ -173,13 +173,13 @@ func (rs *ReadService) allMenuItemsHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	todoListForWaiterResponse := model.AllMenuItemsResponse{
+	allMenuItemsResponse := model.AllMenuItemsResponse{
 		Data:  allMenuItems,
 		OK:    true,
 		Error: "",
 	}
 
-	returnJsonOk(w, todoListForWaiterResponse)
+	returnJsonOk(w, allMenuItemsResponse)
 }
 
 func readTableNumber(q url.Values, w http.ResponseWriter) (int, bool) {

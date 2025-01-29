@@ -27,12 +27,14 @@ func main() {
 	invoiceStage := ui.CreateInvoiceScreen(readApiClient, writeApiClient, &stageManager, w)
 	placeOrderStage := ui.CreatePlaceOrderScreen(writeApiClient, readApiClient, &stageManager)
 	tabStatusStage := ui.CreateTabStatusCreen(&stageManager)
+	waiterTodoListStage := ui.CreateWaiterTodoListScreen(waiters, readApiClient)
 
 	stageManager.RegisterStager(mainContainer)
 	stageManager.RegisterStager(openTabStage)
 	stageManager.RegisterStager(invoiceStage)
 	stageManager.RegisterStager(placeOrderStage)
 	stageManager.RegisterStager(tabStatusStage)
+	stageManager.RegisterStager(waiterTodoListStage)
 
 	w.SetContent(stageManager.GetContainer())
 

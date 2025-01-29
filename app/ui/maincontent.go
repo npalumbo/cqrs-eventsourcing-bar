@@ -12,7 +12,6 @@ const MainContentStage = "MainContent"
 
 type MainContent struct {
 	tableControl         *tableControl
-	waiterDash           *waiterDash
 	stagerManager        *StageManager
 	mainContentContainer *fyne.Container
 }
@@ -31,17 +30,14 @@ func (m *MainContent) GetStageName() string {
 }
 
 func CreateMainContent(totalTables int, client *apiclient.ReadClient, stageManager *StageManager, waiters []string, w fyne.Window) *MainContent {
-	mainContentContainer := container.NewVBox()
+	mainContentContainer := container.NewStack()
 
 	tableControl := CreateTableControl(totalTables, client, waiters, stageManager, mainContentContainer)
-
-	waiterDash := CreateWaiterDash(mainContentContainer)
 
 	tableControl.UpdateActiveTables()
 
 	return &MainContent{
 		tableControl:         tableControl,
-		waiterDash:           waiterDash,
 		stagerManager:        stageManager,
 		mainContentContainer: mainContentContainer,
 	}

@@ -23,19 +23,16 @@ type openTabScreen struct {
 	stageManager   *StageManager
 }
 
-// ExecuteOnTakeOver implements Stager.
 func (o *openTabScreen) ExecuteOnTakeOver(param interface{}) {
 	tableNumber := param.(int)
 	o.table = tableNumber
 	o.tableLabel.Text = fmt.Sprintf("%d", o.table)
 }
 
-// GetPaintedContainer implements Stager.
 func (o *openTabScreen) GetPaintedContainer() *fyne.Container {
 	return o.container
 }
 
-// GetStageName implements Stager.
 func (o *openTabScreen) GetStageName() string {
 	return OpenTabStage
 }
