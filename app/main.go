@@ -43,6 +43,6 @@ func main() {
 		slog.Error("error opening main content screen", slog.Any("error", err))
 	}
 
-	w.Resize(fyne.NewSize(600, 600))
+	w.Resize(fyne.NewSize(600, 460))
 	w.ShowAndRun()
 }
