@@ -1,8 +1,8 @@
 package ui
 
 import (
+	"cqrseventsourcingbar/queries"
 	"fmt"
-	"golangsevillabar/queries"
 	"log/slog"
 
 	"fyne.io/fyne/v2"

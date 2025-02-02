@@ -1,10 +1,10 @@
 package ui
 
 import (
+	"cqrseventsourcingbar/app/apiclient"
+	"cqrseventsourcingbar/queries"
+	"cqrseventsourcingbar/writeservice/model"
 	"fmt"
-	"golangsevillabar/app/apiclient"
-	"golangsevillabar/queries"
-	"golangsevillabar/writeservice/model"
 	"log/slog"
 
 	"fyne.io/fyne/v2"

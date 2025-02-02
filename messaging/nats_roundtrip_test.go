@@ -1,12 +1,12 @@
 package messaging_test
 
 import (
-	"golangsevillabar/events"
-	"golangsevillabar/messaging"
+	"cqrseventsourcingbar/events"
+	"cqrseventsourcingbar/messaging"
 	"testing"
 	"time"
 
-	mock_events "golangsevillabar/events/mocks"
+	mock_events "cqrseventsourcingbar/events/mocks"
 
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/segmentio/ksuid"

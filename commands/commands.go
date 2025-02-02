@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"golangsevillabar/shared"
+	"cqrseventsourcingbar/shared"
 
 	"github.com/segmentio/ksuid"
 )

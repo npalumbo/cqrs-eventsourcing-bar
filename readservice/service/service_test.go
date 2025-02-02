@@ -1,9 +1,9 @@
 package service
 
 import (
+	"cqrseventsourcingbar/queries"
+	queries_mocks "cqrseventsourcingbar/queries/mocks"
 	"errors"
-	"golangsevillabar/queries"
-	queries_mocks "golangsevillabar/queries/mocks"
 	"io"
 	"net/http"
 	"net/http/httptest"

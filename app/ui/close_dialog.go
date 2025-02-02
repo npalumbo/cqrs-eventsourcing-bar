@@ -1,10 +1,10 @@
 package ui
 
 import (
+	"cqrseventsourcingbar/app/apiclient"
+	"cqrseventsourcingbar/writeservice/model"
 	"errors"
 	"fmt"
-	"golangsevillabar/app/apiclient"
-	"golangsevillabar/writeservice/model"
 	"log/slog"
 	"strconv"
 

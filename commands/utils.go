@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"golangsevillabar/shared"
+	"cqrseventsourcingbar/shared"
 	"slices"
 
 	funk "github.com/thoas/go-funk"

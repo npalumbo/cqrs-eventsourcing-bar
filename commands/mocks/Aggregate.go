@@ -3,8 +3,8 @@
 package mocks
 
 import (
-	commands "golangsevillabar/commands"
-	events "golangsevillabar/events"
+	commands "cqrseventsourcingbar/commands"
+	events "cqrseventsourcingbar/events"
 
 	mock "github.com/stretchr/testify/mock"
 )

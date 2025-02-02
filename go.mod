@@ -1,4 +1,4 @@
-module golangsevillabar
+module cqrseventsourcingbar
 
 go 1.23.0
 

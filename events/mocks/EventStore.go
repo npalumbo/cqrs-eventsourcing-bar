@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	events "golangsevillabar/events"
+	events "cqrseventsourcingbar/events"
 
 	ksuid "github.com/segmentio/ksuid"
 

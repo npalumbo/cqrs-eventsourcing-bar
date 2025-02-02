@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"cqrseventsourcingbar/commands"
+	"cqrseventsourcingbar/events"
+	"cqrseventsourcingbar/messaging"
+	"cqrseventsourcingbar/shared"
+	"cqrseventsourcingbar/writeservice/service"
 	"fmt"
-	"golangsevillabar/commands"
-	"golangsevillabar/events"
-	"golangsevillabar/messaging"
-	"golangsevillabar/shared"
-	"golangsevillabar/writeservice/service"
 )
 
 var dispatcher *commands.Dispatcher

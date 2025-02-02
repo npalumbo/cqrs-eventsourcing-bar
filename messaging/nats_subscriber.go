@@ -2,8 +2,8 @@ package messaging
 
 import (
 	"bytes"
+	"cqrseventsourcingbar/events"
 	"encoding/gob"
-	"golangsevillabar/events"
 	"log/slog"
 
 	"github.com/nats-io/nats.go"

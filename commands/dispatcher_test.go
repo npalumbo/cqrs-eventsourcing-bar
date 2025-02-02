@@ -2,12 +2,12 @@ package commands_test
 
 import (
 	"context"
+	"cqrseventsourcingbar/commands"
+	mock_commands "cqrseventsourcingbar/commands/mocks"
+	"cqrseventsourcingbar/events"
+	mock_events "cqrseventsourcingbar/events/mocks"
 	"errors"
 	"fmt"
-	"golangsevillabar/commands"
-	mock_commands "golangsevillabar/commands/mocks"
-	"golangsevillabar/events"
-	mock_events "golangsevillabar/events/mocks"
 	"testing"
 
 	"github.com/segmentio/ksuid"

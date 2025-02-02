@@ -1,9 +1,9 @@
 package commands_test
 
 import (
-	"golangsevillabar/commands"
-	"golangsevillabar/events"
-	"golangsevillabar/shared"
+	"cqrseventsourcingbar/commands"
+	"cqrseventsourcingbar/events"
+	"cqrseventsourcingbar/shared"
 	"testing"
 
 	"github.com/segmentio/ksuid"

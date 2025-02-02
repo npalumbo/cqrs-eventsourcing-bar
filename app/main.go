@@ -1,8 +1,8 @@
 package main
 
 import (
-	"golangsevillabar/app/apiclient"
-	"golangsevillabar/app/ui"
+	"cqrseventsourcingbar/app/apiclient"
+	"cqrseventsourcingbar/app/ui"
 	"log/slog"
 	"net/http"
 
@@ -24,13 +24,13 @@ func main() {
 
 	tableControl := ui.CreateTableControl(amountOfTables, readApiClient, &stageManager)
 	waiterControl := ui.CreateWaiterControl(readApiClient, writeApiClient, waiters, &w, &stageManager)
-	mainContainer := ui.CreateMainContentScreen(tableControl, waiterControl)
+	mainContainerStage := ui.CreateMainContentScreen(tableControl, waiterControl)
 	openTabStage := ui.CreateOpenTabScreen(waiters, writeApiClient, &stageManager)
 	invoiceStage := ui.CreateInvoiceScreen(readApiClient, writeApiClient, &stageManager, w)
 	placeOrderStage := ui.CreatePlaceOrderScreen(writeApiClient, readApiClient, &stageManager)
 	tabStatusStage := ui.CreateTabStatusScreen(&stageManager)
 
-	stageManager.RegisterStager(mainContainer)
+	stageManager.RegisterStager(mainContainerStage)
 	stageManager.RegisterStager(openTabStage)
 	stageManager.RegisterStager(invoiceStage)
 	stageManager.RegisterStager(placeOrderStage)

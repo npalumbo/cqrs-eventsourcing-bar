@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"cqrseventsourcingbar/events"
+	"cqrseventsourcingbar/messaging"
+	"cqrseventsourcingbar/queries"
+	"cqrseventsourcingbar/readservice/service"
+	"cqrseventsourcingbar/shared"
 	"fmt"
-	"golangsevillabar/events"
-	"golangsevillabar/messaging"
-	"golangsevillabar/queries"
-	"golangsevillabar/readservice/service"
-	"golangsevillabar/shared"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 package model
 
 import (
-	"golangsevillabar/queries"
-	"golangsevillabar/shared"
+	"cqrseventsourcingbar/queries"
+	"cqrseventsourcingbar/shared"
 )
 
 type QueryResponse[T any] struct {

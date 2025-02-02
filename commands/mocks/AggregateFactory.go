@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	commands "golangsevillabar/commands"
+	commands "cqrseventsourcingbar/commands"
 
 	mock "github.com/stretchr/testify/mock"
 )

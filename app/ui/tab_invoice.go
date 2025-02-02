@@ -1,9 +1,9 @@
 package ui
 
 import (
+	"cqrseventsourcingbar/app/apiclient"
+	"cqrseventsourcingbar/queries"
 	"fmt"
-	"golangsevillabar/app/apiclient"
-	"golangsevillabar/queries"
 	"log/slog"
 	"strconv"
 

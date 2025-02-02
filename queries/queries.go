@@ -1,9 +1,9 @@
 package queries
 
 import (
+	"cqrseventsourcingbar/events"
 	"errors"
 	"fmt"
-	"golangsevillabar/events"
 	"slices"
 	"sync"
 

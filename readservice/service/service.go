@@ -1,11 +1,11 @@
 package service
 
 import (
+	"cqrseventsourcingbar/queries"
+	"cqrseventsourcingbar/readservice/model"
+	"cqrseventsourcingbar/shared"
 	"encoding/json"
 	"fmt"
-	"golangsevillabar/queries"
-	"golangsevillabar/readservice/model"
-	"golangsevillabar/shared"
 	"log/slog"
 	"net/http"
 	"net/url"

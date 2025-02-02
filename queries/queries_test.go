@@ -1,9 +1,9 @@
 package queries_test
 
 import (
-	"golangsevillabar/events"
-	"golangsevillabar/queries"
-	"golangsevillabar/shared"
+	"cqrseventsourcingbar/events"
+	"cqrseventsourcingbar/queries"
+	"cqrseventsourcingbar/shared"
 	"testing"
 
 	"github.com/segmentio/ksuid"

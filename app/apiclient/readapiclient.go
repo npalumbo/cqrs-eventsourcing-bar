@@ -1,9 +1,9 @@
 package apiclient
 
 import (
+	"cqrseventsourcingbar/readservice/model"
 	"encoding/json"
 	"fmt"
-	"golangsevillabar/readservice/model"
 	"io"
 	"net/http"
 )

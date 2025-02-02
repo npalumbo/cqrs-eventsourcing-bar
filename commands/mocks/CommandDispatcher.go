@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	commands "golangsevillabar/commands"
+	commands "cqrseventsourcingbar/commands"
 
 	mock "github.com/stretchr/testify/mock"
 )

@@ -2,9 +2,9 @@ package messaging
 
 import (
 	"bytes"
+	"cqrseventsourcingbar/events"
 	"encoding/gob"
 	"encoding/json"
-	"golangsevillabar/events"
 
 	"github.com/nats-io/nats.go"
 )

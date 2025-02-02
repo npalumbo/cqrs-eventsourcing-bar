@@ -2,8 +2,8 @@ package commands
 
 import (
 	"context"
+	"cqrseventsourcingbar/events"
 	"fmt"
-	"golangsevillabar/events"
 	"reflect"
 )
 

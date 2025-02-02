@@ -9,15 +9,7 @@ tools: ## Installs required binaries locally
 	go install github.com/vektra/mockery/v2@v2.49.0
 	go install fyne.io/fyne/v2/cmd/fyne@latest
 
-##@ Building
-build-multi-arch: ## Builds golang-sevilla-bar go binary for linux and darwin. Outputs to `bin/golang-sevilla-bar-$GOOS-$GOARCH`.
-	@echo "== build-multi-arch"
-	mkdir -p bin/
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o bin/golang-sevilla-bar-linux-amd64 ./...
-	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o bin/golang-sevilla-bar-darwin-amd64 ./...
-	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o bin/golang-sevilla-bar-darwin-arm64 ./...
-
-build: check## Builds golang-sevilla-bar go binary for local arch. Outputs to `bin/golang-sevilla-bar`
+build: check## Builds cqrs-eventsourcing-bar go binaries for local arch. Outputs to `bin/app, bin/readservice, bin/writeservice`
 	@echo "== build"
 	CGO_ENABLED=1 go build -o bin/ ./...
 

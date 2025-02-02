@@ -5,9 +5,9 @@ import (
 	"log"
 	"testing"
 
-	"golangsevillabar/events"
-	"golangsevillabar/shared"
-	"golangsevillabar/testhelpers"
+	"cqrseventsourcingbar/events"
+	"cqrseventsourcingbar/shared"
+	"cqrseventsourcingbar/testhelpers"
 
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"

@@ -2,10 +2,10 @@ package apiclient
 
 import (
 	"bytes"
+	"cqrseventsourcingbar/writeservice/model"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golangsevillabar/writeservice/model"
 	"io"
 	"log/slog"
 	"net/http"

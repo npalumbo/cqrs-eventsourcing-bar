@@ -1,10 +1,10 @@
 package commands
 
 import (
+	"cqrseventsourcingbar/events"
+	"cqrseventsourcingbar/shared"
 	"errors"
 	"fmt"
-	"golangsevillabar/events"
-	"golangsevillabar/shared"
 
 	"github.com/thoas/go-funk"
 )

@@ -3,13 +3,13 @@ package service
 import (
 	"bytes"
 	"context"
+	"cqrseventsourcingbar/commands"
+	commands_mocks "cqrseventsourcingbar/commands/mocks"
+	"cqrseventsourcingbar/shared"
+	shared_mocks "cqrseventsourcingbar/shared/mocks"
+	"cqrseventsourcingbar/writeservice/model"
 	"encoding/json"
 	"errors"
-	"golangsevillabar/commands"
-	commands_mocks "golangsevillabar/commands/mocks"
-	"golangsevillabar/shared"
-	shared_mocks "golangsevillabar/shared/mocks"
-	"golangsevillabar/writeservice/model"
 	"io"
 
 	"net/http"

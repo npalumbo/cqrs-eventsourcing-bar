@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"golangsevillabar/app/apiclient"
+	"cqrseventsourcingbar/app/apiclient"
 	"image/color"
 	"log/slog"
 

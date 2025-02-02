@@ -2,8 +2,8 @@ package shared_test
 
 import (
 	"context"
-	"golangsevillabar/shared"
-	"golangsevillabar/testhelpers"
+	"cqrseventsourcingbar/shared"
+	"cqrseventsourcingbar/testhelpers"
 	"log"
 	"testing"
 

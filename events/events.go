@@ -1,9 +1,9 @@
 package events
 
 import (
+	"cqrseventsourcingbar/shared"
 	"encoding/json"
 	"fmt"
-	"golangsevillabar/shared"
 	"reflect"
 
 	"github.com/segmentio/ksuid"

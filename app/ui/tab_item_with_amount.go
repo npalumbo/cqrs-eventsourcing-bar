@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"golangsevillabar/queries"
+	"cqrseventsourcingbar/queries"
 	"slices"
 )
 
