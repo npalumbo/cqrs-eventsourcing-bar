@@ -57,9 +57,9 @@ func (c *ReadClient) GetInvoiceForTable(tableNumber int) (model.InvoiceForTableR
 	return processResponse(c, req, response)
 }
 
-func (c *ReadClient) GetTodoListForWaiter() (model.TodoListForWaiterResponse, error) {
+func (c *ReadClient) GetTodoListForWaiter(waiter string) (model.TodoListForWaiterResponse, error) {
 	response := model.TodoListForWaiterResponse{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/todoListForWaiter", c.url), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/todoListForWaiter?waiter=%s", c.url, waiter), nil)
 	if err != nil {
 		return response, err
 	}
@@ -85,7 +85,6 @@ func processResponse[T any](c *ReadClient, req *http.Request, response T) (T, er
 	}
 	defer resp.Body.Close()
 
-	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)

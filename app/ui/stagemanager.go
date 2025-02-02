@@ -62,15 +62,3 @@ func (s StageManager) GetContainer() *fyne.Container {
 func (d *DefaultStager) ExecuteOnTakeOver() {
 
 }
-
-// func handleErrorAndGoToHomeView(err error, parent fyne.Window, stagerController StagerController) {
-// 	dialog.ShowError(err, parent)
-// 	goToHomeView(stagerController, parent)
-// }
-
-// func goToHomeView(stagerController StagerController, parent fyne.Window) {
-// 	err := stagerController.TakeOver("Home")
-// 	if err != nil {
-// 		dialog.ShowError(err, parent)
-// 	}
-// }

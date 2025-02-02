@@ -14,16 +14,10 @@ import (
 
 const InvoiceStage = "Invoice"
 
-type tabItemWithAmount struct {
-	tabItem  queries.TabItem
-	amount   int
-	subTotal float64
-}
-
 type invoiceScreen struct {
 	table                 int
 	containerInCard       *fyne.Container
-	tableLabel            *widget.Label
+	invoiceScreenCard     *widget.Card
 	totalLabel            *widget.Label
 	hasUnservedItemsLabel *widget.Label
 	tipLabel              *widget.Label
@@ -46,7 +40,7 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	i.tipLabel.Text = ""
 	tableNumber := param.(int)
 	i.table = tableNumber
-	i.payingWithEntry.Text = ""
+	i.payingWithEntry.Text = "0"
 
 	response, err := i.readApiClient.GetInvoiceForTable(tableNumber)
 	if err != nil {
@@ -68,7 +62,7 @@ func (i *invoiceScreen) ExecuteOnTakeOver(param interface{}) {
 	i.itemsList.Refresh()
 	i.containerInCard.Refresh()
 	i.container.Refresh()
-	i.tableLabel.Text = fmt.Sprintf("%d", i.table)
+	i.invoiceScreenCard.SetTitle(fmt.Sprintf("Invoice for table %d", i.table))
 	i.totalLabel.Text = fmt.Sprintf("%.2f", invoice.Total)
 	i.currentTotal, err = strconv.ParseFloat(fmt.Sprintf("%.2f", invoice.Total), 64)
 	if err != nil {
@@ -92,17 +86,16 @@ func (i *invoiceScreen) GetStageName() string {
 }
 
 func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *apiclient.WriteClient, stageManager *StageManager, w fyne.Window) *invoiceScreen {
-	tableLabel := widget.NewLabel("")
 	tipLabel := widget.NewLabel("")
 	tabItemsWithAmount := &[]tabItemWithAmount{}
 	itemsList := CreateTabItemList(tabItemsWithAmount)
 	totalLabel := widget.NewLabel("")
 	hasUnservedItemsLabel := widget.NewLabel("")
 	payingWithEntry := widget.NewEntry()
+	payingWithEntry.Text = "0"
 
 	invoiceScreen := &invoiceScreen{
 		table:                 0,
-		tableLabel:            tableLabel,
 		totalLabel:            totalLabel,
 		tipLabel:              tipLabel,
 		hasUnservedItemsLabel: hasUnservedItemsLabel,
@@ -116,32 +109,32 @@ func CreateInvoiceScreen(readApiClient *apiclient.ReadClient, writeApiClient *ap
 		currentTip:            0,
 	}
 
-	closeTabDialog := createCoseTabFormDialog(w, payingWithEntry, invoiceScreen, writeApiClient)
-
-	closeTabDialog.Refresh()
-
 	closeTabButton := widget.NewButton("Close Tab", func() {
+		closeTabDialog := createCoseTabFormDialog(w, payingWithEntry, invoiceScreen, writeApiClient)
 		closeTabDialog.Show()
 	})
 
-	containerInCard := container.NewGridWithColumns(2,
-		widget.NewLabel("Table"), tableLabel,
-		widget.NewLabel("Items"), itemsList,
-		widget.NewLabel("Total"), totalLabel,
-		widget.NewLabel("Has UnservedItems"), hasUnservedItemsLabel,
-		widget.NewLabel("Tip"), tipLabel,
+	containerInCard := container.NewBorder(nil, container.NewGridWithRows(1,
 		widget.NewButton("Back", func() {
 			err := stageManager.TakeOver(MainContentStage, nil)
 			if err != nil {
 				slog.Error("error launching main content screen", slog.Any("error", err))
 			}
 		}),
-		closeTabButton,
-	)
+		closeTabButton),
+		nil, nil,
+		container.NewGridWithColumns(2,
+			widget.NewLabel("Items"), itemsList,
+			widget.NewLabel("Total"), totalLabel,
+			widget.NewLabel("Has UnservedItems"), hasUnservedItemsLabel,
+			widget.NewLabel("Tip"), tipLabel,
+		))
 
-	container := container.NewStack(widget.NewCard("Invoice", "", containerInCard))
+	invoiceScreenCard := widget.NewCard("Invoice", "", containerInCard)
+	container := container.NewStack(invoiceScreenCard)
 
 	invoiceScreen.containerInCard = containerInCard
+	invoiceScreen.invoiceScreenCard = invoiceScreenCard
 	invoiceScreen.container = container
 	invoiceScreen.closeTabButton = closeTabButton
 

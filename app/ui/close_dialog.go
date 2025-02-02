@@ -15,7 +15,7 @@ import (
 
 func createCoseTabFormDialog(w fyne.Window, payingWithEntry *widget.Entry, invoiceScreen *invoiceScreen, writeApiClient *apiclient.WriteClient) *dialog.FormDialog {
 	formItems := []*widget.FormItem{}
-	formItems = append(formItems, widget.NewFormItem("Total", invoiceScreen.totalLabel))
+	formItems = append(formItems, widget.NewFormItem("Total", widget.NewLabel(fmt.Sprintf("%.2f", invoiceScreen.currentTotal))))
 
 	payingWithFormItem := widget.NewFormItem("Paying with", payingWithEntry)
 	payingWithFormItem.HintText = "Amount"
@@ -35,8 +35,6 @@ func createCoseTabFormDialog(w fyne.Window, payingWithEntry *widget.Entry, invoi
 		return nil
 	}
 	closeTabDialog := dialog.NewForm("Close Tab", "Close", "Cancel", formItems, func(hitCloseButton bool) {
-		slog.Info("Value of b", slog.Any("b", hitCloseButton))
-
 		if hitCloseButton {
 
 			amount, err := strconv.ParseFloat(payingWithEntry.Text, 64)

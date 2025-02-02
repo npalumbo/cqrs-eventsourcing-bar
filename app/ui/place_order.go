@@ -16,15 +16,15 @@ import (
 const PlaceOrderStage = "PlaceOrder"
 
 type placeOrderScreen struct {
-	container      *fyne.Container
-	table          int
-	tableLabel     *widget.Label
-	writeApiClient *apiclient.WriteClient
-	readApiClient  *apiclient.ReadClient
-	stageManager   *StageManager
-	form           *widget.Form
-	allMenuItems   []shared.MenuItem
-	tabId          *string
+	container            *fyne.Container
+	placeOrderScreenCard *widget.Card
+	table                int
+	writeApiClient       *apiclient.WriteClient
+	readApiClient        *apiclient.ReadClient
+	stageManager         *StageManager
+	form                 *widget.Form
+	allMenuItems         []shared.MenuItem
+	tabId                *string
 }
 
 func (p *placeOrderScreen) ExecuteOnTakeOver(param interface{}) {
@@ -35,7 +35,7 @@ func (p *placeOrderScreen) ExecuteOnTakeOver(param interface{}) {
 		selectAmount.SetSelected("0")
 	}
 	p.table = tableNumberAndTabId.tableNumber
-	p.tableLabel.Text = fmt.Sprintf("%d", p.table)
+	p.placeOrderScreenCard.Title = fmt.Sprintf("Order drinks for table %d", p.table)
 	p.tabId = &tableNumberAndTabId.tabId
 }
 
@@ -48,7 +48,7 @@ func (p *placeOrderScreen) GetStageName() string {
 }
 
 func CreatePlaceOrderScreen(writeApiClient *apiclient.WriteClient, readApiClient *apiclient.ReadClient, stageManager *StageManager) *placeOrderScreen {
-	container := container.NewVBox()
+	container := container.NewStack()
 
 	allMenuItemsResponse, err := readApiClient.GetAllMenuItems()
 
@@ -69,15 +69,16 @@ func CreatePlaceOrderScreen(writeApiClient *apiclient.WriteClient, readApiClient
 	}
 
 	form := widget.NewForm(menuFormItems...)
+	placeOrderScreenCard := widget.NewCard("Order drinks", "", form)
 
 	placeOrderScreen := &placeOrderScreen{
-		container:      container,
-		tableLabel:     &widget.Label{},
-		writeApiClient: writeApiClient,
-		readApiClient:  readApiClient,
-		stageManager:   stageManager,
-		form:           form,
-		allMenuItems:   allMenuItems,
+		container:            container,
+		placeOrderScreenCard: placeOrderScreenCard,
+		writeApiClient:       writeApiClient,
+		readApiClient:        readApiClient,
+		stageManager:         stageManager,
+		form:                 form,
+		allMenuItems:         allMenuItems,
 	}
 
 	form.SubmitText = "OK"
@@ -121,10 +122,8 @@ func CreatePlaceOrderScreen(writeApiClient *apiclient.WriteClient, readApiClient
 		if err != nil {
 			slog.Error("error opening main content screen", slog.Any("error", err))
 		}
-
 	}
 
-	container.Add(widget.NewCard("Order drinks", "", form))
-
+	container.Add(placeOrderScreenCard)
 	return placeOrderScreen
 }

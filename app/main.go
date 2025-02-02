@@ -22,19 +22,17 @@ func main() {
 
 	stageManager := ui.CreateStageManager()
 
-	mainContainer := ui.CreateMainContent(amountOfTables, readApiClient, &stageManager, waiters, w)
+	mainContainer := ui.CreateMainContent(amountOfTables, readApiClient, writeApiClient, &stageManager, waiters, w)
 	openTabStage := ui.CreateOpenTabScreen(waiters, writeApiClient, &stageManager)
 	invoiceStage := ui.CreateInvoiceScreen(readApiClient, writeApiClient, &stageManager, w)
 	placeOrderStage := ui.CreatePlaceOrderScreen(writeApiClient, readApiClient, &stageManager)
 	tabStatusStage := ui.CreateTabStatusCreen(&stageManager)
-	waiterTodoListStage := ui.CreateWaiterTodoListScreen(waiters, readApiClient)
 
 	stageManager.RegisterStager(mainContainer)
 	stageManager.RegisterStager(openTabStage)
 	stageManager.RegisterStager(invoiceStage)
 	stageManager.RegisterStager(placeOrderStage)
 	stageManager.RegisterStager(tabStatusStage)
-	stageManager.RegisterStager(waiterTodoListStage)
 
 	w.SetContent(stageManager.GetContainer())
 
@@ -43,6 +41,6 @@ func main() {
 		slog.Error("error opening main content screen", slog.Any("error", err))
 	}
 
-	w.Resize(fyne.NewSize(600, 460))
+	w.Resize(fyne.NewSize(600, 600))
 	w.ShowAndRun()
 }

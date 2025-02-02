@@ -38,25 +38,24 @@ func (m myTheme) Size(name fyne.ThemeSizeName) float32 {
 }
 
 type tableControl struct {
-	Container    *fyne.Container
-	tableButtons []*tableButton
-	client       *apiclient.ReadClient
-	waiters      []string
+	Card           *widget.Card
+	innerContainer *fyne.Container
+	tableButtons   []*tableButton
+	client         *apiclient.ReadClient
 }
 
-func CreateTableControl(totalTables int, client *apiclient.ReadClient, waiters []string, stageManager *StageManager, mainContainer *fyne.Container) *tableControl {
+func CreateTableControl(totalTables int, client *apiclient.ReadClient, stageManager *StageManager) *tableControl {
 
 	tableButtons := []*tableButton{}
 	grid := container.New(layout.NewGridLayout(3))
 	for i := 0; i < totalTables; i++ {
-		tableButton := newTableButton(i+1, waiters, stageManager)
+		tableButton := newTableButton(i+1, stageManager)
 		tableButtons = append(tableButtons, tableButton)
 		grid.Add(container.NewThemeOverride(tableButton, &myTheme{}))
 	}
-	mainContainer.Add(widget.NewCard("Table Control", "", grid))
+	card := widget.NewCard("Table Control", "", grid)
 
-	return &tableControl{Container: grid, tableButtons: tableButtons, client: client,
-		waiters: waiters}
+	return &tableControl{Card: card, innerContainer: grid, tableButtons: tableButtons, client: client}
 }
 
 func (tc *tableControl) UpdateActiveTables() {
@@ -85,5 +84,5 @@ func (tc *tableControl) UpdateActiveTables() {
 		}
 		tc.tableButtons[tableID-1].SetActive(&tabStatus.Data)
 	}
-	tc.Container.Refresh()
+	tc.innerContainer.Refresh()
 }

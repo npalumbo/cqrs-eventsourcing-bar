@@ -20,13 +20,12 @@ type tableButton struct {
 	menuActive   *fyne.Menu
 	menuInactive *fyne.Menu
 	Active       bool
-	waiters      []string
 	stageManager *StageManager
 	tabStatus    *queries.TabStatus
 }
 
-func newTableButton(ID int, waiters []string, stageManager *StageManager) *tableButton {
-	tableButton := &tableButton{ID: ID, waiters: waiters, stageManager: stageManager}
+func newTableButton(ID int, stageManager *StageManager) *tableButton {
+	tableButton := &tableButton{ID: ID, stageManager: stageManager}
 	tableButton.ExtendBaseWidget(tableButton)
 
 	tableButton.menuActive = fyne.NewMenu("Active Table",
@@ -49,12 +48,6 @@ func newTableButton(ID int, waiters []string, stageManager *StageManager) *table
 			err := stageManager.TakeOver(TabStatusStage, tableButton.tabStatus)
 			if err != nil {
 				slog.Error("error launching tab status screen", slog.Any("error", err))
-			}
-		}),
-		fyne.NewMenuItem("Waiter to-do list", func() {
-			err := stageManager.TakeOver(WaiterTodoListStage, ID)
-			if err != nil {
-				slog.Error("error launching waiter todo list screen", slog.Any("error", err))
 			}
 		}),
 	)
