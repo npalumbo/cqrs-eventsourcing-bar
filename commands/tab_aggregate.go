@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"golangsevillabar/events"
 	"golangsevillabar/shared"
-	"slices"
 
 	"github.com/thoas/go-funk"
 )
@@ -94,7 +93,7 @@ func (t *tabAggregate) applyTabOpened(_ events.TabOpened) error {
 }
 
 func (t *tabAggregate) applyDrinksOrdered(e events.DrinksOrdered) error {
-	t.outstandingDrinks = e.Items
+	t.outstandingDrinks = append(t.outstandingDrinks, e.Items...)
 	return nil
 }
 
@@ -103,9 +102,7 @@ func (t *tabAggregate) applyDrinksServed(e events.DrinksServed) error {
 		found := funk.Find(t.outstandingDrinks, func(item shared.MenuItem) bool { return item.ID == menuNumber })
 		if found != nil {
 			if itemFound, ok := found.(shared.MenuItem); ok {
-				t.outstandingDrinks = slices.DeleteFunc(t.outstandingDrinks, func(itemToDelete shared.MenuItem) bool {
-					return itemToDelete == itemFound
-				})
+				t.outstandingDrinks = deleteFirstMatch(t.outstandingDrinks, itemFound.ID)
 				t.servedItemsAmount += itemFound.Price
 			}
 
@@ -113,6 +110,15 @@ func (t *tabAggregate) applyDrinksServed(e events.DrinksServed) error {
 	}
 
 	return nil
+}
+
+func deleteFirstMatch(slice []shared.MenuItem, target int) []shared.MenuItem {
+	for i, val := range slice {
+		if val.ID == target {
+			return append(slice[:i], slice[i+1:]...)
+		}
+	}
+	return slice
 }
 
 func (t *tabAggregate) applyTabClosed(_ events.TabClosed) error {
