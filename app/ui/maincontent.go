@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"golangsevillabar/app/apiclient"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -13,7 +12,6 @@ const MainContentStage = "MainContent"
 type MainContent struct {
 	tableControl         *tableControl
 	waiterControl        *waiterControl
-	stagerManager        *StageManager
 	mainContentContainer *fyne.Container
 }
 
@@ -31,11 +29,7 @@ func (m *MainContent) GetStageName() string {
 	return MainContentStage
 }
 
-func CreateMainContent(totalTables int, client *apiclient.ReadClient, writeClient *apiclient.WriteClient, stageManager *StageManager, waiters []string, w fyne.Window) *MainContent {
-
-	tableControl := CreateTableControl(totalTables, client, stageManager)
-	waiterControl := CreateWaiterControl(client, writeClient, waiters, &w, stageManager)
-
+func CreateMainContentScreen(tableControl *tableControl, waiterControl *waiterControl) *MainContent {
 	mainContentContainer := container.NewBorder(nil, waiterControl.Card, nil, nil, tableControl.Card)
 
 	tableControl.UpdateActiveTables()
@@ -44,7 +38,6 @@ func CreateMainContent(totalTables int, client *apiclient.ReadClient, writeClien
 	return &MainContent{
 		tableControl:         tableControl,
 		waiterControl:        waiterControl,
-		stagerManager:        stageManager,
 		mainContentContainer: mainContentContainer,
 	}
 }

@@ -42,7 +42,7 @@ func (t *tabStatusScreen) GetStageName() string {
 	return TabStatusStage
 }
 
-func CreateTabStatusCreen(stageManager *StageManager) *tabStatusScreen {
+func CreateTabStatusScreen(stageManager *StageManager) *tabStatusScreen {
 
 	tableLabel := widget.NewLabel("")
 	toServeWithAmount := &[]tabItemWithAmount{}

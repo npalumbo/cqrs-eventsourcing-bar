@@ -22,11 +22,13 @@ func main() {
 
 	stageManager := ui.CreateStageManager()
 
-	mainContainer := ui.CreateMainContent(amountOfTables, readApiClient, writeApiClient, &stageManager, waiters, w)
+	tableControl := ui.CreateTableControl(amountOfTables, readApiClient, &stageManager)
+	waiterControl := ui.CreateWaiterControl(readApiClient, writeApiClient, waiters, &w, &stageManager)
+	mainContainer := ui.CreateMainContentScreen(tableControl, waiterControl)
 	openTabStage := ui.CreateOpenTabScreen(waiters, writeApiClient, &stageManager)
 	invoiceStage := ui.CreateInvoiceScreen(readApiClient, writeApiClient, &stageManager, w)
 	placeOrderStage := ui.CreatePlaceOrderScreen(writeApiClient, readApiClient, &stageManager)
-	tabStatusStage := ui.CreateTabStatusCreen(&stageManager)
+	tabStatusStage := ui.CreateTabStatusScreen(&stageManager)
 
 	stageManager.RegisterStager(mainContainer)
 	stageManager.RegisterStager(openTabStage)
