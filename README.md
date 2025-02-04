@@ -5,7 +5,7 @@ An intentionally over-engineered demo app to showcase CQRS and event sourcing. H
 
 ## Design
 
-This repo has just 1 aggregate, the *Tab* aggregate and 4 commands and their counterpart events.
+This repo has just 1 aggregate, the **Tab** aggregate and 4 commands and their counterpart events.
 
 ![The design](./docs/design.png "Design")
 
@@ -53,3 +53,11 @@ Simple start from  3 terminals the 3 binaries in order:
 ### Mark Drinks Served
 
 ![Mark Drinks Served](./docs/mark_drinks_served.png "Open Tab")
+
+### Close Tab
+
+![Close Tab](./docs/close_tab.png "Close Tab")
+
+### Tab Status
+
+![Tab Status](./docs/tab_status.png "Tab Status")
