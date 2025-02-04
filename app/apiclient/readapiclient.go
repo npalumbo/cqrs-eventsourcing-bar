@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 type ReadClient struct {
@@ -59,7 +60,7 @@ func (c *ReadClient) GetInvoiceForTable(tableNumber int) (model.InvoiceForTableR
 
 func (c *ReadClient) GetTodoListForWaiter(waiter string) (model.TodoListForWaiterResponse, error) {
 	response := model.TodoListForWaiterResponse{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/todoListForWaiter?waiter=%s", c.url, waiter), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/todoListForWaiter?waiter=%s", c.url, url.QueryEscape(waiter)), nil)
 	if err != nil {
 		return response, err
 	}

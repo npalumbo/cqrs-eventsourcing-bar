@@ -15,7 +15,7 @@ func main() {
 	w := a.NewWindow("CQRS ES BAR")
 
 	const amountOfTables = 6
-	waiters := []string{"w1", "w2"}
+	waiters := []string{"waiter 1", "waiter 2"}
 
 	readApiClient := apiclient.NewReadClient(&http.Client{}, "http://localhost:8081")
 	writeApiClient := apiclient.NewWriteClient(&http.Client{}, "http://localhost:8080")
