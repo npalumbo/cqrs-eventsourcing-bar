@@ -7,7 +7,7 @@ help:  ## Display this help.
 tools: ## Installs required binaries locally
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/vektra/mockery/v2@v2.49.0
-	go install fyne.io/fyne/v2/cmd/fyne@latest
+	go install fyne.io/fyne/v2/cmd/fyne@v2.6.0-alpha1
 
 build: check## Builds cqrs-eventsourcing-bar go binaries for local arch. Outputs to `bin/app, bin/readservice, bin/writeservice`
 	@echo "== build"
