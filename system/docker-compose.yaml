@@ -6,10 +6,33 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: mydb
     restart: always
-    volumes:
-    - ./init-db.sql:/docker-entrypoint-initdb.d/1.sql:ro
     ports:
       - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  migrate:
+    image: "migrate/migrate"
+    restart: "no"
+    volumes:
+      - ../migrations:/migrations:ro
+    command: ["-path", "/migrations", "-database", "postgresql://postgres:mysecretpassword@postgres:5432/mydb?sslmode=disable", "up"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  seed:
+    image: "postgres:16-alpine"
+    restart: "no"
+    environment:
+      PGPASSWORD: mysecretpassword
+    volumes:
+      - ../system/seed.sql:/seed.sql:ro
+    command: ["psql", "-h", "postgres", "-U", "postgres", "-d", "mydb", "-f", "/seed.sql"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
   nats:
     image: "nats-streaming:0.9.2"
     restart: always

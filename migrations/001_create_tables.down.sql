@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS menu_item;
+DROP TABLE IF EXISTS events;
