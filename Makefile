@@ -6,7 +6,7 @@ help:  ## Display this help.
 ##@ Tools
 tools: ## Installs required binaries locally
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install github.com/vektra/mockery/v2@v2.49.0
+	go install github.com/vektra/mockery/v2@latest
 	go install fyne.io/fyne/v2/cmd/fyne@latest
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
