@@ -5,47 +5,26 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"github.com/jackc/pgx/v5"
+	eventsdb "cqrseventsourcingbar/internal/db/events"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/segmentio/ksuid"
 )
 
 type postgresEventStore struct {
-	conn *pgx.Conn
+	queries *eventsdb.Queries
+	conn    *pgx.Conn
 }
 
 func (es *postgresEventStore) LoadAllEvents(ctx context.Context) ([]Event, error) {
-	rows, err := es.conn.Query(ctx, "SELECT event_type, payload FROM events ORDER BY aggregate_id, sequence_number ASC")
-
+	rows, err := es.queries.LoadAllEvents(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	return processEvents(rows)
-}
-
-func (es *postgresEventStore) LoadEvents(ctx context.Context, aggregateID ksuid.KSUID) ([]Event, error) {
-	rows, err := es.conn.Query(ctx, "SELECT event_type, payload FROM events WHERE aggregate_id = $1 ORDER BY sequence_number ASC", aggregateID.String())
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	return processEvents(rows)
-}
-
-func processEvents(rows pgx.Rows) ([]Event, error) {
 	var events []Event
-	for rows.Next() {
-		var event Event
-		var eventType string
-		var payload []byte
-		if err := rows.Scan(&eventType, &payload); err != nil {
-			return nil, err
-		}
-		event, err := UnmarshallPayload(eventType, payload)
+	for _, row := range rows {
+		event, err := UnmarshallPayload(row.EventType, row.Payload)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +33,24 @@ func processEvents(rows pgx.Rows) ([]Event, error) {
 	return events, nil
 }
 
-func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.KSUID, previousEventCount int, events []Event) (err error) {
+func (es *postgresEventStore) LoadEvents(ctx context.Context, aggregateID ksuid.KSUID) ([]Event, error) {
+	rows, err := es.queries.LoadEventsByAggregateID(ctx, aggregateID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	var events []Event
+	for _, row := range rows {
+		event, err := UnmarshallPayload(row.EventType, row.Payload)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
+
+func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.KSUID, previousEventCount int, eventsToSave []Event) (err error) {
 	tx, err := es.conn.BeginTx(ctx, pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
 		AccessMode: pgx.ReadWrite,
@@ -62,20 +58,28 @@ func (es *postgresEventStore) SaveEvents(ctx context.Context, aggregateID ksuid.
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		if err != nil {
-			if err := tx.Rollback(ctx); err != nil {
-				slog.Error("error, rollback", slog.String("error", err.Error()))
+			if rbErr := tx.Rollback(ctx); rbErr != nil {
+				slog.Error("error, rollback", slog.String("error", rbErr.Error()))
 			}
 		}
 	}()
 
-	for i, event := range events {
+	txQueries := eventsdb.New(tx)
+
+	for i, event := range eventsToSave {
 		payload, err := json.Marshal(event)
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, "INSERT INTO events (aggregate_id, sequence_number, timestamp, event_type, payload) VALUES ($1, $2, NOW(), $3, $4)", aggregateID, previousEventCount+i+1, GetEventTypeAsString(event), payload)
+		err = txQueries.SaveEvent(ctx, eventsdb.SaveEventParams{
+			AggregateID:    aggregateID.String(),
+			SequenceNumber: int32(previousEventCount + i + 1),
+			EventType:      GetEventTypeAsString(event),
+			Payload:        payload,
+		})
 		if err != nil {
 			return err
 		}
@@ -91,6 +95,7 @@ func NewPostgresEventStore(ctx context.Context, connStr string) (EventStore, err
 		return nil, err
 	}
 	return &postgresEventStore{
-		conn: conn,
+		queries: eventsdb.New(conn),
+		conn:    conn,
 	}, nil
 }

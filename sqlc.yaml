@@ -1,0 +1,19 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "sql/menu_item"
+    schema: "testdata/init-db.sql"
+    gen:
+      go:
+        package: "db"
+        out: "internal/db/menu_item"
+        sql_package: "pgx/v5"
+
+  - engine: "postgresql"
+    queries: "sql/events"
+    schema: "testdata/init-db.sql"
+    gen:
+      go:
+        package: "db"
+        out: "internal/db/events"
+        sql_package: "pgx/v5"
